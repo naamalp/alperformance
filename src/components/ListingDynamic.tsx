@@ -3,6 +3,7 @@
 import { ListingDynamicContentType, ServiceContentType } from '@/types/contentful';
 import { getContentfulClient } from '@/lib/contentful';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface ListingDynamicProps {
@@ -153,10 +154,11 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                     <div className="absolute inset-x-10 top-10 bottom-0 overflow-hidden rounded-t-[12cqw] border-x-[3cqw] border-t-[3cqw] border-gray-700 bg-gray-900 shadow-2xl">
                       {service.fields.featureImage && (
                         <>
-                          <img
+                          <Image
                             src={service.fields.featureImage.fields.file.url}
                             alt={service.fields.featureImage.fields.title}
-                            className="size-full object-cover object-center"
+                            fill
+                            className="object-cover object-center"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
                         </>

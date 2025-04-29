@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getContentfulClient } from '@/lib/contentful';
-import { ServiceContentType, PageContentType, ListingDynamicContentType } from '@/types/contentful';
+import { ServiceContentType, PageContentType } from '@/types/contentful';
 import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
@@ -110,7 +110,6 @@ export default async function DynamicPage({ params }: PageProps) {
       notFound();
     }
 
-    // Basic structure to verify rendering
     return (
       <main className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -122,34 +121,20 @@ export default async function DynamicPage({ params }: PageProps) {
           
           {content.type === 'page' && (
             <div className="mt-8">
-              {/* Debug section */}
-              <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-8">
-                <h2 className="text-xl font-bold">Debug Info</h2>
-                <p>Body items: {(content.data as PageContentType).fields.body?.length || 0}</p>
-                <pre className="mt-2 text-sm overflow-auto">
-                  {JSON.stringify((content.data as PageContentType).fields.body, null, 2)}
-                </pre>
-              </div>
-
-              {/* Content section */}
-              <div className="space-y-8">
-                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item, index) => {
-                  const entry = item as any;
-                  const contentType = entry.sys?.contentType?.sys?.id;
-                  
-                  console.log(`Processing item ${index}:`, contentType);
-                  console.log('Entry data:', JSON.stringify(entry, null, 2));
+              <div className="prose max-w-none">
+                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item) => {
+                  const contentType = item.sys.contentType.sys.id;
                   
                   if (contentType === 'heroBanner') {
-                    const itemFields = entry.fields;
+                    const itemFields = item.fields;
                     const imageData = itemFields.image?.fields || {};
                     const assetData = imageData.image?.fields || {};
                     
                     const heroBannerData = {
                       sys: {
-                        id: entry.sys.id,
-                        type: entry.sys.type,
-                        linkType: entry.sys.linkType
+                        id: item.sys.id,
+                        type: item.sys.type,
+                        linkType: item.sys.linkType
                       },
                       fields: {
                         title: itemFields.title || '',
@@ -170,7 +155,7 @@ export default async function DynamicPage({ params }: PageProps) {
                             }
                           }
                         },
-                        ctaGroup: itemFields.ctaGroup?.map((cta: any) => ({
+                        ctaGroup: itemFields.ctaGroup?.map((cta) => ({
                           sys: cta.sys,
                           fields: {
                             label: cta.fields.label.content[0]?.content[0]?.value || '',
@@ -181,18 +166,18 @@ export default async function DynamicPage({ params }: PageProps) {
                       }
                     };
                     
-                    return <HeroBanner key={entry.sys.id} data={heroBannerData} />;
+                    return <HeroBanner key={item.sys.id} data={heroBannerData} />;
                   }
 
                   if (contentType === 'listingDynamic') {
                     console.log('Found listingDynamic content type');
-                    const itemFields = entry.fields;
+                    const itemFields = item.fields;
                     
                     const listingData = {
                       sys: {
-                        id: entry.sys.id,
-                        type: entry.sys.type,
-                        linkType: entry.sys.linkType
+                        id: item.sys.id,
+                        type: item.sys.type,
+                        linkType: item.sys.linkType
                       },
                       fields: {
                         internalName: itemFields.internalName || '',
@@ -208,7 +193,7 @@ export default async function DynamicPage({ params }: PageProps) {
                     };
                     
                     console.log('Listing data:', JSON.stringify(listingData, null, 2));
-                    return <ListingDynamic key={entry.sys.id} data={listingData} />;
+                    return <ListingDynamic key={item.sys.id} data={listingData} />;
                   }
 
                   console.log('Unhandled content type:', contentType);
@@ -222,16 +207,6 @@ export default async function DynamicPage({ params }: PageProps) {
     );
   } catch (error) {
     console.error('Error in DynamicPage:', error);
-    return (
-      <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-3xl font-bold text-red-600">Error Loading Page</h1>
-          <p className="mt-4 text-gray-600">There was an error loading the page content.</p>
-          <pre className="mt-4 p-4 bg-red-50 text-red-700 rounded">
-            {error instanceof Error ? error.message : 'Unknown error'}
-          </pre>
-        </div>
-      </main>
-    );
+    notFound();
   }
 } 

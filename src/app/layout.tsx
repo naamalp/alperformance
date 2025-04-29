@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.scss";
 import Navigation from '@/components/Navigation';
 import { getContentfulClient } from '@/lib/contentful';
 import { NavigationContentType } from '@/types/contentful';
 
 const inter = Inter({ subsets: ["latin"] });
-const poppins = Poppins({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   title: "AL Performance",
@@ -35,11 +31,8 @@ export default async function RootLayout({
   const navigationData = await getNavigationData();
 
   return (
-    <html lang="en" className={poppins.className}>
-      <body className="font-sans">
-        <Navigation data={navigationData} />
-        {children}
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

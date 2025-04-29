@@ -30,63 +30,51 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   try {
     const client = getContentfulClient();
-    console.log('Fetching home page content...');
-    
-    const page = await client.getEntries({
+    const response = await client.getEntries({
       content_type: 'page',
-      'fields.slug': '/',
-      include: 3,
+      'fields.slug': 'home',
+      include: 3
     });
 
-    if (!page.items.length) {
-      console.log('No home page found in Contentful');
-      notFound();
+    if (!response.items.length) {
+      return (
+        <main className="min-h-screen bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h1 className="text-3xl font-bold text-gray-900">Welcome to AL Performance</h1>
+          </div>
+        </main>
+      );
     }
 
-    const pageData = page.items[0] as unknown as PageContentType;
-    console.log('Page data:', pageData);
-    console.log('Body items:', pageData.fields.body?.length);
+    const page = response.items[0] as unknown as PageContentType;
 
     return (
       <main className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {pageData.fields.body?.map((item, index) => {
-            const entry = item as any;
-            const contentType = entry.sys?.contentType?.sys?.id;
+          <h1 className="text-3xl font-bold text-gray-900">{page.fields.pageTitle}</h1>
+          {page.fields.body?.map((item) => {
+            const contentType = item.sys.contentType.sys.id;
             
-            console.log(`Processing item ${index}:`, contentType);
-            
-            switch (contentType) {
-              case 'heroBanner':
-                return (
-                  <div key={entry.sys.id} className="mb-12">
-                    <HeroBanner data={entry} />
-                  </div>
-                );
-              case 'listingDynamic':
-                return (
-                  <div key={entry.sys.id} className="mb-12">
-                    <ListingDynamic data={entry} />
-                  </div>
-                );
-              default:
-                console.warn(`Unhandled content type: ${contentType}`);
-                return null;
+            if (contentType === 'heroBanner') {
+              return <HeroBanner key={item.sys.id} data={item} />;
             }
+
+            if (contentType === 'listingDynamic') {
+              return <ListingDynamic key={item.sys.id} data={item} />;
+            }
+
+            return null;
           })}
         </div>
       </main>
     );
   } catch (error) {
-    console.error('Error fetching home page:', error);
+    console.error('Error loading home page:', error);
     return (
       <main className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="text-3xl font-bold text-red-600">Error Loading Page</h1>
           <p className="mt-4 text-gray-600">There was an error loading the page content.</p>
-          <pre className="mt-4 p-4 bg-red-50 text-red-700 rounded">
-            {error instanceof Error ? error.message : 'Unknown error'}
-          </pre>
         </div>
       </main>
     );
