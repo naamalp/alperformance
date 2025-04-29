@@ -11,11 +11,6 @@ interface PageProps {
   };
 }
 
-interface Breadcrumb {
-  label: string;
-  href: string;
-}
-
 async function getContentBySlug(slug: string) {
   try {
     const client = getContentfulClient();
@@ -53,23 +48,6 @@ async function getContentBySlug(slug: string) {
     console.error('Error fetching content:', error);
     return null;
   }
-}
-
-function generateBreadcrumbs(content: ServiceContentType | PageContentType, type: 'service' | 'page'): Breadcrumb[] {
-  if (type === 'service') {
-    const service = content as ServiceContentType;
-    return [
-      { label: 'Home', href: '/' },
-      { label: 'Services', href: '/our-services' },
-      { label: service.fields.name, href: `/services/${service.fields.slug}` },
-    ];
-  }
-
-  const page = content as PageContentType;
-  return [
-    { label: 'Home', href: '/' },
-    { label: page.fields.pageTitle, href: `/${page.fields.slug}` },
-  ];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
