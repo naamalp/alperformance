@@ -113,19 +113,25 @@ interface PageContentType {
 
 interface ServiceFields {
   name: string;
-  description: string;
+  shortDescription: string;
   slug: string;
-  featureImage?: {
+  featuredImage?: {
     fields: {
-      title: string;
-      description: string;
-      file: {
-        url: string;
-        contentType: string;
-        details: {
-          image: {
-            width: number;
-            height: number;
+      altText: string;
+      internalName: string;
+      image: {
+        fields: {
+          title: string;
+          description: string;
+          file: {
+            url: string;
+            contentType: string;
+            details: {
+              image: {
+                width: number;
+                height: number;
+              };
+            };
           };
         };
       };
