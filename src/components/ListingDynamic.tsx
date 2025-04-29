@@ -17,21 +17,18 @@ async function getServices(limit?: number) {
     const query = {
       content_type: 'service',
       limit: limit || 8,
-      include: 3,
-      select: ['sys', 'fields.name', 'fields.description', 'fields.slug', 'fields.parent', 'fields.featureImage']
+      include: 3
     };
     console.log('Contentful query:', query);
 
     const response = await client.getEntries(query);
-    console.log('Contentful response:', response);
-    console.log('Number of items:', response.items.length);
-    
-    if (response.items.length > 0) {
-      console.log('First item fields:', response.items[0].fields);
-      if (response.items[0].fields.featureImage) {
-        console.log('First item featureImage:', response.items[0].fields.featureImage);
-      }
-    }
+    console.log('Contentful response:', {
+      total: response.total,
+      items: response.items.length,
+      firstItemFields: response.items[0]?.fields,
+      firstItemSys: response.items[0]?.sys,
+      firstItemFeaturedImage: response.items[0]?.fields?.featuredImage
+    });
 
     return response.items as unknown as ServiceContentType[];
   } catch (error) {
@@ -39,7 +36,8 @@ async function getServices(limit?: number) {
     if (error instanceof Error) {
       console.error('Error details:', {
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
+        name: error.name
       });
     }
     return [];
@@ -142,27 +140,25 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                   <h3 className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
                     {service.fields.name}
                   </h3>
-                  {service.fields.description && (
+                  {service.fields.shortDescription && (
                     <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                      {service.fields.description}
+                      {service.fields.shortDescription}
                     </p>
                   )}
                 </div>
                 {isLarge && (
                   <div className="@container relative min-h-[30rem] w-full grow max-lg:mx-auto max-lg:max-w-sm">
-                    <div className="absolute inset-x-10 top-10 bottom-0 overflow-hidden rounded-t-[12cqw] border-x-[3cqw] border-t-[3cqw] border-gray-700 bg-gray-900 shadow-2xl">
-                      {service.fields.featureImage && (
+                      {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
                         <>
                           <img
-                            src={service.fields.featureImage.fields.file.url}
-                            alt={service.fields.featureImage.fields.title}
+                            src={`https:${service.fields.featuredImage.fields.image.fields.file.url}`}
+                            alt={service.fields.featuredImage.fields.altText || service.fields.name}
                             className="size-full object-cover object-center"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
                         </>
                       )}
                     </div>
-                  </div>
                 )}
               </Link>
               <div className={`pointer-events-none absolute inset-px rounded-lg shadow-sm ring-1 ring-black/5 ${
