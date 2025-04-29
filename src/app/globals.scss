@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Root variables
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --brand-primary-dark: #051D40;
+  --brand-primary-light: #1C3BD4;
+  --brand-secondary-dark: #C9C9C9;
+  --brand-secondary-light: #E5E5E5;
+  --brand-white: #ffffff;
+  --brand-black: #000000;
+}
+
+// Theme variables
+@layer base {
+  :root {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #051D40;
+    --foreground: #ffffff;
+  }
+}
+
+// Base styles
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: theme('fontFamily.sans', system-ui, -apple-system, sans-serif);
+}
+
+// Brand classes
+.bg-brand-primary-dark {
+  background-color: var(--brand-primary-dark);
+  color: var(--brand-white);
+}
+
+.bg-brand-primary-light {
+  background-color: var(--brand-primary-light);
+} 
