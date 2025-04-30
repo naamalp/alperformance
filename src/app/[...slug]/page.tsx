@@ -5,6 +5,12 @@ import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 
+type PageParams = {
+  params: {
+    slug: string[];
+  };
+};
+
 async function getContentBySlug(slug: string) {
   try {
     const client = getContentfulClient();
@@ -44,8 +50,8 @@ async function getContentBySlug(slug: string) {
   }
 }
 
-// @ts-ignore
-export default async function Page({ params }: any) {
+// @ts-expect-error - Next.js page props type mismatch
+export default async function Page({ params }: PageParams) {
   try {
     const slug = params.slug.join('/');
     console.log('Processing slug:', slug);
@@ -168,8 +174,8 @@ export default async function Page({ params }: any) {
   }
 }
 
-// @ts-ignore
-export async function generateMetadata({ params }: any): Promise<Metadata> {
+// @ts-expect-error - Next.js page props type mismatch
+export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const slug = params.slug.join('/');
   const content = await getContentBySlug(slug);
   
