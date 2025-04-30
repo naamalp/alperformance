@@ -158,10 +158,10 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
             
             // Calculate border radius classes
             const roundedClasses = [
-              index === 0 ? 'lg:rounded-l-[2rem]' : '',
-              index === 3 ? 'lg:rounded-r-[2rem]' : '',
-              index === 1 ? 'max-lg:rounded-t-[2rem]' : '',
-              index === 2 ? 'max-lg:rounded-b-[2rem]' : ''
+              index === 0 ? 'lg:rounded-tl-[2rem]' : '',
+              index === 3 ? 'lg:rounded-tr-[2rem]' : '',
+              index === 4 ? 'lg:rounded-bl-[2rem]' : '',
+              index === 5 ? 'lg:rounded-br-[2rem]' : ''
             ].filter(Boolean).join(' ');
 
             return (
@@ -169,7 +169,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                 <div className={`absolute inset-px rounded-lg bg-white ${roundedClasses}`}></div>
                 <Link
                   href={url}
-                  className={`relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] ${roundedClasses.replace('lg:', 'lg:rounded-').replace('max-lg:', 'max-lg:rounded-')}`}
+                  className={`relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}
                 >
                   <div className="px-8 pt-8 sm:px-10 sm:pt-10">
                     <h3 className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
@@ -181,7 +181,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                       </p>
                     )}
                   </div>
-                  <div className="@container relative w-full grow max-lg:mx-auto max-lg:max-w-sm px-5">
+                  <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-sm rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}>
                     {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
                       <>
                         <img
