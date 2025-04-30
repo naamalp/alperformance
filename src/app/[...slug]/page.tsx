@@ -5,11 +5,12 @@ import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 
-interface PageProps {
+type PageProps = {
   params: {
     slug: string[];
   };
-}
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
 async function getContentBySlug(slug: string) {
   try {
