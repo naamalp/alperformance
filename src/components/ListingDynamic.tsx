@@ -3,6 +3,7 @@
 import { ListingDynamicContentType, ServiceContentType } from '@/types/contentful';
 import { getContentfulClient } from '@/lib/contentful';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface ListingDynamicProps {
@@ -184,9 +185,11 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                   <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-sm rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}>
                     {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
                       <>
-                        <img
+                        <Image
                           src={`https:${service.fields.featuredImage.fields.image.fields.file.url}`}
                           alt={service.fields.featuredImage.fields.altText || service.fields.name}
+                          width={service.fields.featuredImage.fields.image.fields.file.details.image.width}
+                          height={service.fields.featuredImage.fields.image.fields.file.details.image.height}
                           className="w-full object-contain object-center"
                         />
                       </>

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getContentfulClient } from '@/lib/contentful';
-import { ServiceContentType, PageContentType, HeroBannerContentType, ListingDynamicContentType } from '@/types/contentful';
+import { ServiceContentType, PageContentType, CTAContentType } from '@/types/contentful';
 import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
@@ -101,7 +101,7 @@ export default async function DynamicPage({ params }: PageProps) {
           {content.type === 'page' && (
             <div className="mt-8">
               <div className="prose max-w-none">
-                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item: any) => {
+                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item) => {
                   const contentType = item.sys.contentType?.sys?.id;
                   console.log('Content type:', contentType, 'Item:', JSON.stringify(item, null, 2));
                   
@@ -136,7 +136,7 @@ export default async function DynamicPage({ params }: PageProps) {
                             }
                           }
                         },
-                        ctaGroup: itemFields.ctaGroup?.map((cta: any) => {
+                        ctaGroup: itemFields.ctaGroup?.map((cta) => {
                           console.log('CTA fields:', JSON.stringify(cta.fields, null, 2));
                           return {
                             sys: {
