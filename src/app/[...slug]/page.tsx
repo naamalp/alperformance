@@ -44,41 +44,12 @@ async function getContentBySlug(slug: string) {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
+type Props = {
   params: { slug: string[] };
-}): Promise<Metadata> {
-  const slug = params.slug.join('/');
-  const content = await getContentBySlug(slug);
-  
-  if (!content) {
-    return {
-      title: 'Page Not Found',
-      description: 'The requested page could not be found.',
-    };
-  }
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-  if (content.type === 'service') {
-    const service = content.data as ServiceContentType;
-    return {
-      title: service.fields.name,
-      description: service.fields.shortDescription,
-    };
-  }
-
-  const page = content.data as PageContentType;
-  return {
-    title: page.fields.pageTitle,
-    description: page.fields.pageDescription,
-  };
-}
-
-export default async function DynamicPage({
-  params,
-}: {
-  params: { slug: string[] };
-}) {
+export default async function Page({ params }: Props) {
   try {
     const slug = params.slug.join('/');
     console.log('Processing slug:', slug);
@@ -199,4 +170,30 @@ export default async function DynamicPage({
     console.error('Error in DynamicPage:', error);
     notFound();
   }
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = params.slug.join('/');
+  const content = await getContentBySlug(slug);
+  
+  if (!content) {
+    return {
+      title: 'Page Not Found',
+      description: 'The requested page could not be found.',
+    };
+  }
+
+  if (content.type === 'service') {
+    const service = content.data as ServiceContentType;
+    return {
+      title: service.fields.name,
+      description: service.fields.shortDescription,
+    };
+  }
+
+  const page = content.data as PageContentType;
+  return {
+    title: page.fields.pageTitle,
+    description: page.fields.pageDescription,
+  };
 } 
