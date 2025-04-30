@@ -5,13 +5,6 @@ import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 
-type PageProps = {
-  params: {
-    slug: string[];
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
-
 async function getContentBySlug(slug: string) {
   try {
     const client = getContentfulClient();
@@ -51,7 +44,11 @@ async function getContentBySlug(slug: string) {
   }
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string[] };
+}): Promise<Metadata> {
   const slug = params.slug.join('/');
   const content = await getContentBySlug(slug);
   
@@ -77,7 +74,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function DynamicPage({ params }: PageProps) {
+export default async function DynamicPage({
+  params,
+}: {
+  params: { slug: string[] };
+}) {
   try {
     const slug = params.slug.join('/');
     console.log('Processing slug:', slug);
