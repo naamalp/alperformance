@@ -172,4 +172,4 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
       </div>
     </div>
   );
-} 
+}
