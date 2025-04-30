@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getContentfulClient } from '@/lib/contentful';
-import { ServiceContentType, PageContentType, CTAContentType } from '@/types/contentful';
+import { ServiceContentType, PageContentType } from '@/types/contentful';
 import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
