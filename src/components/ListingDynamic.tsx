@@ -17,7 +17,8 @@ async function getServices(limit?: number) {
     const query = {
       content_type: 'service',
       limit: limit || 8,
-      include: 3
+      include: 3,
+      order: 'fields.order'
     };
     console.log('Contentful query:', query);
 
@@ -30,7 +31,13 @@ async function getServices(limit?: number) {
       firstItemFeaturedImage: response.items[0]?.fields?.featuredImage
     });
 
-    return response.items as unknown as ServiceContentType[];
+    const sortedItems = response.items.sort((a, b) => {
+      const orderA = Number(a.fields.order) || 999;
+      const orderB = Number(b.fields.order) || 999;
+      return orderA - orderB;
+    });
+
+    return sortedItems as unknown as ServiceContentType[];
   } catch (error) {
     console.error('Error fetching services:', error);
     if (error instanceof Error) {
@@ -69,9 +76,11 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <p className="text-gray-600">Loading services...</p>
+      <div className="bg-gray-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-600">Loading services...</p>
+          </div>
         </div>
       </div>
     );
@@ -79,9 +88,11 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <p className="text-red-600">Error loading services: {error}</p>
+      <div className="bg-gray-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+          <div className="text-center">
+            <p className="text-red-600">Error loading services: {error}</p>
+          </div>
         </div>
       </div>
     );
@@ -89,90 +100,104 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
 
   if (services.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <p className="text-gray-600">No services found.</p>
+      <div className="bg-gray-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-600">No services found.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900">{data.fields.title}</h2>
+    <div className="py-24 sm:py-32">
+      <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+        <h2 className="text-center text-base/7 font-semibold text-indigo-600">{data.fields.title}</h2>
         {data.fields.subTitle && (
-          <p className="mt-4 text-xl text-gray-600">{data.fields.subTitle}</p>
+          <p className="mx-auto mt-2 max-w-lg text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
+            {data.fields.subTitle}
+          </p>
         )}
-      </div>
+        <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
+          {services.map((service, index) => {
+            // Build the URL based on parent relationship
+            const url = service.fields.parent
+              ? `/services/${service.fields.parent.fields.slug}/${service.fields.slug}`
+              : `/services/${service.fields.slug}`;
 
-      <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-4">
-        {services.map((service, index) => {
-          // Build the URL based on parent relationship
-          const url = service.fields.parent
-            ? `/services/${service.fields.parent.fields.slug}/${service.fields.slug}`
-            : `/services/${service.fields.slug}`;
+            // Determine the size and position of each card based on its index
+            let positionClasses = '';
+            if (services.length === 6) {
+              switch (index) {
+                case 0: // First service - spans 2 rows
+                  positionClasses = 'relative lg:row-span-2';
+                  break;
+                case 1: // Second service - first row
+                  positionClasses = 'relative max-lg:row-start-1';
+                  break;
+                case 2: // Third service - second row, second column
+                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-2 lg:row-start-2';
+                  break;
+                case 3: // Fourth service - spans 2 rows
+                  positionClasses = 'relative lg:row-span-2';
+                  break;
+                case 4: // Fifth service - 50% width
+                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-1 lg:col-span-1';
+                  break;
+                case 5: // Sixth service - 50% width
+                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-2 lg:col-span-2';
+                  break;
+              }
+            } else {
+              // Fallback for other numbers of services
+              const isFirst = index === 0;
+              const isLast = index === services.length - 1;
+              positionClasses = isFirst || isLast ? 'relative lg:row-span-2' : 'relative';
+            }
+            
+            // Calculate border radius classes
+            const roundedClasses = [
+              index === 0 ? 'lg:rounded-l-[2rem]' : '',
+              index === 3 ? 'lg:rounded-r-[2rem]' : '',
+              index === 1 ? 'max-lg:rounded-t-[2rem]' : '',
+              index === 2 ? 'max-lg:rounded-b-[2rem]' : ''
+            ].filter(Boolean).join(' ');
 
-          // Determine the size of each card based on its position and total count
-          const totalServices = services.length;
-          const isLastRow = index >= Math.floor(totalServices / 4) * 4;
-          const isLarge = index % 4 === 0; // First card in each row
-          const isMedium = index % 4 === 1; // Second card in each row
-          
-          // Adjust column spans for the last row if it's not full
-          const lastRowColSpan = totalServices % 4;
-          const colSpan = isLastRow && lastRowColSpan > 0 
-            ? `lg:col-span-${Math.ceil(4 / lastRowColSpan)}`
-            : 'lg:col-span-1';
-          
-          return (
-            <div key={service.sys.id} className={`relative ${colSpan}`}>
-              <div className={`absolute inset-px rounded-lg bg-white ${
-                isLarge ? 'lg:rounded-l-[2rem]' : 
-                isMedium ? 'max-lg:rounded-t-[2rem]' : 
-                ''
-              }`}></div>
-              <Link
-                href={url}
-                className={`relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] ${
-                  isLarge ? 'lg:rounded-l-[calc(2rem+1px)]' : 
-                  isMedium ? 'max-lg:rounded-t-[calc(2rem+1px)]' : 
-                  ''
-                }`}
-              >
-                <div className="px-8 pt-8 sm:px-10 sm:pt-10">
-                  <h3 className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                    {service.fields.name}
-                  </h3>
-                  {service.fields.shortDescription && (
-                    <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
-                      {service.fields.shortDescription}
-                    </p>
-                  )}
-                </div>
-                {isLarge && (
-                  <div className="@container relative min-h-[30rem] w-full grow max-lg:mx-auto max-lg:max-w-sm">
+            return (
+              <div key={service.sys.id} className={positionClasses}>
+                <div className={`absolute inset-px rounded-lg bg-white ${roundedClasses}`}></div>
+                <Link
+                  href={url}
+                  className={`relative flex h-full flex-col overflow-hidden rounded-[calc(var(--radius-lg)+1px)] ${roundedClasses.replace('lg:', 'lg:rounded-').replace('max-lg:', 'max-lg:rounded-')}`}
+                >
+                  <div className="px-8 pt-8 sm:px-10 sm:pt-10">
+                    <h3 className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
+                      {service.fields.name}
+                    </h3>
+                    {service.fields.shortDescription && (
+                      <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
+                        {service.fields.shortDescription}
+                      </p>
+                    )}
+                  </div>
+                  <div className="@container relative w-full grow max-lg:mx-auto max-lg:max-w-sm px-5">
                     {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
                       <>
                         <img
                           src={`https:${service.fields.featuredImage.fields.image.fields.file.url}`}
                           alt={service.fields.featuredImage.fields.altText || service.fields.name}
-                          className="size-full object-cover object-center"
+                          className="w-full object-contain object-center"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
                       </>
                     )}
                   </div>
-                )}
-              </Link>
-              <div className={`pointer-events-none absolute inset-px rounded-lg shadow-sm ring-1 ring-black/5 ${
-                isLarge ? 'lg:rounded-l-[2rem]' : 
-                isMedium ? 'max-lg:rounded-t-[2rem]' : 
-                ''
-              }`}></div>
-            </div>
-          );
-        })}
+                </Link>
+                <div className={`pointer-events-none absolute inset-px rounded-lg shadow-sm ring-1 ring-black/5 ${roundedClasses}`}></div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

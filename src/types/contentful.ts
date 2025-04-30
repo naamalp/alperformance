@@ -16,7 +16,7 @@ interface CTAFields {
       slug: string;
     };
   };
-  style: 'primary' | 'secondary' | 'outline';
+  type: 'Primary' | 'Secondary' | 'Link';
 }
 
 interface CTAContentType {

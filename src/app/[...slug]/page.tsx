@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getContentfulClient } from '@/lib/contentful';
-import { ServiceContentType, PageContentType } from '@/types/contentful';
+import { ServiceContentType, PageContentType, HeroBannerContentType, ListingDynamicContentType } from '@/types/contentful';
 import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
@@ -51,7 +51,7 @@ async function getContentBySlug(slug: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const slug = await Promise.resolve(params.slug.join('/'));
+  const slug = params.slug.join('/');
   const content = await getContentBySlug(slug);
   
   if (!content) {
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const service = content.data as ServiceContentType;
     return {
       title: service.fields.name,
-      description: service.fields.description,
+      description: service.fields.shortDescription,
     };
   }
 
@@ -78,13 +78,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function DynamicPage({ params }: PageProps) {
   try {
-    const slug = await Promise.resolve(params.slug.join('/'));
+    const slug = params.slug.join('/');
     console.log('Processing slug:', slug);
     
     const content = await getContentBySlug(slug);
     console.log('Content type:', content?.type);
     
     if (!content) {
+      console.log('No content found for slug:', slug);
       notFound();
     }
 
@@ -100,13 +101,13 @@ export default async function DynamicPage({ params }: PageProps) {
           {content.type === 'page' && (
             <div className="mt-8">
               <div className="prose max-w-none">
-                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item) => {
-                  const contentType = item.sys.contentType.sys.id;
+                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item: any) => {
+                  const contentType = item.sys.contentType?.sys?.id;
+                  console.log('Content type:', contentType, 'Item:', JSON.stringify(item, null, 2));
                   
                   if (contentType === 'heroBanner') {
                     const itemFields = item.fields;
-                    const imageData = itemFields.image?.fields || {};
-                    const assetData = imageData.image?.fields || {};
+                    const imageData = itemFields.image?.fields;
                     
                     const heroBannerData = {
                       sys: {
@@ -119,28 +120,37 @@ export default async function DynamicPage({ params }: PageProps) {
                         subTitle: itemFields.subTitle || '',
                         image: {
                           fields: {
-                            title: assetData.title || '',
-                            description: assetData.description || '',
-                            file: {
-                              url: assetData.file?.url || '',
-                              contentType: assetData.file?.contentType || '',
-                              details: {
-                                image: {
-                                  width: assetData.file?.details?.image?.width || 0,
-                                  height: assetData.file?.details?.image?.height || 0
+                            image: {
+                              fields: {
+                                file: {
+                                  url: imageData?.file?.url || '',
+                                  contentType: imageData?.file?.contentType || '',
+                                  details: {
+                                    image: {
+                                      width: imageData?.file?.details?.image?.width || 0,
+                                      height: imageData?.file?.details?.image?.height || 0
+                                    }
+                                  }
                                 }
                               }
                             }
                           }
                         },
-                        ctaGroup: itemFields.ctaGroup?.map((cta) => ({
-                          sys: cta.sys,
-                          fields: {
-                            label: cta.fields.label.content[0]?.content[0]?.value || '',
-                            link: cta.fields.link,
-                            style: cta.fields.type.toLowerCase()
-                          }
-                        })) || []
+                        ctaGroup: itemFields.ctaGroup?.map((cta: any) => {
+                          console.log('CTA fields:', JSON.stringify(cta.fields, null, 2));
+                          return {
+                            sys: {
+                              id: cta.sys.id,
+                              type: cta.sys.type,
+                              linkType: cta.sys.linkType
+                            },
+                            fields: {
+                              label: cta.fields.label?.content?.[0]?.content?.[0]?.value || '',
+                              link: cta.fields.link,
+                              type: cta.fields.type || 'Primary'
+                            }
+                          };
+                        }) || []
                       }
                     };
                     
@@ -158,12 +168,12 @@ export default async function DynamicPage({ params }: PageProps) {
                         linkType: item.sys.linkType
                       },
                       fields: {
-                        internalName: itemFields.internalName || '',
+                        internalName: itemFields.internalName,
                         title: itemFields.title || '',
                         subTitle: itemFields.subTitle || '',
-                        listingContent: itemFields.listingContent || 'Services',
+                        listingContent: itemFields.listingContent,
                         category: itemFields.category || '',
-                        style: itemFields.style || 'Grid',
+                        style: itemFields.style,
                         filters: itemFields.filters || false,
                         limit: itemFields.limit || 8,
                         pagination: itemFields.pagination || false
