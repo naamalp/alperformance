@@ -86,10 +86,15 @@ interface PageEntry extends EntrySkeletonType {
   };
 }
 
+type PageProps = {
+  params: { slug: string[] };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
 export async function generateMetadata() {
   const client = getContentfulClient();
   const query = {
-    content_type: 'page',
+    content_type: 'page' as const,
     'fields.slug': '/',
     include: 3,
   };
@@ -110,7 +115,7 @@ export async function generateMetadata() {
 export default async function Home() {
   const client = getContentfulClient();
   const query = {
-    content_type: 'page',
+    content_type: 'page' as const,
     'fields.slug': '/',
     include: 3,
   };
@@ -130,7 +135,7 @@ export default async function Home() {
 
   return (
     <main>
-      {page.fields.body.map((item) => {
+      {page.fields.body.map((item: PageEntry['fields']['body'][number]) => {
         console.log('Rendering body item:', {
           contentType: item.sys.contentType?.sys.id,
           fields: item.fields
