@@ -5,10 +5,21 @@ import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 
-type PageProps = {
-  params: { slug: string[] };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+interface ContentfulEntry {
+  sys: {
+    id: string;
+    type: string;
+    linkType: string;
+    contentType?: {
+      sys: {
+        id: string;
+      };
+    };
+  };
+  fields: {
+    [key: string]: any;
+  };
+}
 
 async function getContentBySlug(slug: string) {
   try {
@@ -49,7 +60,11 @@ async function getContentBySlug(slug: string) {
   }
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({
+  params,
+}: {
+  params: { slug: string[] };
+}) {
   try {
     const slug = params.slug.join('/');
     console.log('Processing slug:', slug);
@@ -74,7 +89,7 @@ export default async function Page({ params }: PageProps) {
           {content.type === 'page' && (
             <div className="mt-8">
               <div className="prose max-w-none">
-                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item) => {
+                {await Promise.all((content.data as PageContentType).fields.body?.map(async (item: ContentfulEntry) => {
                   const contentType = item.sys.contentType?.sys?.id;
                   console.log('Content type:', contentType, 'Item:', JSON.stringify(item, null, 2));
                   
@@ -109,7 +124,7 @@ export default async function Page({ params }: PageProps) {
                             }
                           }
                         },
-                        ctaGroup: itemFields.ctaGroup?.map((cta) => {
+                        ctaGroup: itemFields.ctaGroup?.map((cta: ContentfulEntry) => {
                           console.log('CTA fields:', JSON.stringify(cta.fields, null, 2));
                           return {
                             sys: {
@@ -172,7 +187,11 @@ export default async function Page({ params }: PageProps) {
   }
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string[] };
+}): Promise<Metadata> {
   const slug = params.slug.join('/');
   const content = await getContentBySlug(slug);
   

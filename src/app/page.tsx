@@ -3,6 +3,22 @@ import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 import { EntrySkeletonType } from 'contentful';
 
+interface ContentfulEntry {
+  sys: {
+    id: string;
+    type: string;
+    linkType: string;
+    contentType?: {
+      sys: {
+        id: string;
+      };
+    };
+  };
+  fields: {
+    [key: string]: any;
+  };
+}
+
 interface PageEntry extends EntrySkeletonType {
   contentTypeId: 'page';
   sys: {
@@ -15,74 +31,7 @@ interface PageEntry extends EntrySkeletonType {
     pageDescription: string;
     pageType: string;
     slug: string;
-    body: Array<{
-      sys: {
-        id: string;
-        type: string;
-        linkType: string;
-        contentType: {
-          sys: {
-            id: string;
-          };
-        };
-      };
-      fields: {
-        title: string;
-        subTitle: string;
-        image: {
-          fields: {
-            image: {
-              fields: {
-                file: {
-                  url: string;
-                  contentType: string;
-                  details: {
-                    image: {
-                      width: number;
-                      height: number;
-                    };
-                  };
-                };
-              };
-            };
-          };
-        };
-        ctaGroup?: Array<{
-          sys: {
-            id: string;
-          };
-          fields: {
-            label: {
-              content: Array<{
-                content: Array<{
-                  value: string;
-                }>;
-              }>;
-            };
-            link: {
-              fields: {
-                slug: string;
-              };
-            };
-            type: 'Primary' | 'Link';
-          };
-        }>;
-        listingContent: 'Services' | 'Articles';
-        style?: string;
-        filters?: Array<{
-          sys: {
-            id: string;
-          };
-          fields: {
-            name: string;
-            value: string;
-          };
-        }>;
-        limit?: number;
-        pagination?: boolean;
-        internalName: string;
-      };
-    }>;
+    body: ContentfulEntry[];
   };
 }
 
@@ -130,7 +79,7 @@ export default async function Home() {
 
   return (
     <main>
-      {page.fields.body.map((item: PageEntry['fields']['body'][number]) => {
+      {page.fields.body.map((item: ContentfulEntry) => {
         console.log('Rendering body item:', {
           contentType: item.sys.contentType?.sys.id,
           fields: item.fields
