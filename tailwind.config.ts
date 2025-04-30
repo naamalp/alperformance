@@ -19,9 +19,20 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-poppins)', 'sans-serif'],
       },
+      borderRadius: {
+        'lg': 'var(--radius-lg)',
+      },
+      spacing: {
+        '4.5': '1.125rem',
+        '5.5': '1.375rem',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/aspect-ratio'),
+  ],
 };
 
 export default config; 

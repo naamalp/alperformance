@@ -1,3 +1,5 @@
+import { EntrySkeletonType } from 'contentful';
+
 interface CTAFields {
   label: string;
   link: {
@@ -157,7 +159,8 @@ interface ServiceContentType {
   fields: ServiceFields;
 }
 
-export interface NavigationContentType {
+export interface NavigationContentType extends EntrySkeletonType {
+  contentTypeId: 'navigation';
   sys: {
     id: string;
   };

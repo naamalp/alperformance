@@ -41,18 +41,17 @@ export default function Navigation({ data }: NavigationProps) {
   const { logo, items } = data.fields;
 
   const getPageUrl = (link: NavigationContentType['fields']['items'][0]['fields']['link']) => {
-    if (!link) return '/';
-    
-    // If the link is to a service with a parent, include the parent's slug
-    if (link.sys.contentType.sys.id === 'service' && link.fields.parent) {
-      return `/${link.fields.parent.fields.slug}/${link.fields.slug}`;
-    }
+    // If no link or fields, return home
+    if (!link?.fields?.slug) return '/';
     
     // For regular pages, just use their slug
     return `/${link.fields.slug}`;
   };
 
   const renderMenuItem = (item: NavigationContentType['fields']['items'][0]) => {
+    // Skip if item or fields is missing
+    if (!item?.fields) return null;
+    
     const hasSubItems = item.fields.items && item.fields.items.length > 0;
     const pageUrl = getPageUrl(item.fields.link);
     
@@ -68,6 +67,9 @@ export default function Navigation({ data }: NavigationProps) {
           <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block">
             <div className="py-1">
               {item.fields.items?.map((subItem) => {
+                // Skip if subItem or fields is missing
+                if (!subItem?.fields?.link) return null;
+                
                 const subPageUrl = getPageUrl(subItem.fields.link);
                 return (
                   <Link
@@ -158,39 +160,79 @@ export default function Navigation({ data }: NavigationProps) {
       </div>
 
       {/* Mobile menu */}
-      <div className={`${isOpen ? 'block' : 'hidden'} md:hidden`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
-          {items?.map((item) => {
-            const pageUrl = getPageUrl(item.fields.link);
-            return (
-              <div key={item.sys.id}>
-                <Link
-                  href={pageUrl}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.fields.label}
-                </Link>
-                {item.fields.items && item.fields.items.length > 0 && (
-                  <div className="pl-4">
-                    {item.fields.items.map((subItem) => {
-                      const subPageUrl = getPageUrl(subItem.fields.link);
-                      return (
-                        <Link
-                          key={subItem.sys.id}
-                          href={subPageUrl}
-                          className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          {subItem.fields.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+      <div className={`${isOpen ? 'block' : 'hidden'} lg:hidden`} role="dialog" aria-modal="true">
+        {/* Background backdrop */}
+        <div className="fixed inset-0 z-50 bg-gray-900/80" onClick={() => setIsOpen(false)}></div>
+        
+        {/* Mobile menu panel */}
+        <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="-m-1.5 p-1.5">
+              <span className="sr-only">AL Performance</span>
+              {logo?.fields?.file?.url && (
+                <Image
+                  src={`https:${logo.fields.file.url}`}
+                  alt={logo.fields.title || 'AL Performance Logo'}
+                  width={logo.fields.file.details.image.width}
+                  height={logo.fields.file.details.image.height}
+                  className="h-8 w-auto"
+                  priority
+                />
+              )}
+            </Link>
+            <button
+              type="button"
+              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="sr-only">Close menu</span>
+              <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="mt-6 flow-root">
+            <div className="-my-6 divide-y divide-gray-500/10">
+              <div className="space-y-2 py-6">
+                {items?.map((item) => {
+                  if (!item?.fields) return null;
+                  
+                  const pageUrl = getPageUrl(item.fields.link);
+                  return (
+                    <div key={item.sys.id}>
+                      <Link
+                        href={pageUrl}
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.fields.label}
+                      </Link>
+                      {item.fields.items && item.fields.items.length > 0 && (
+                        <div className="pl-4 space-y-2">
+                          {item.fields.items.map((subItem) => {
+                            if (!subItem?.fields?.link) return null;
+                            
+                            const subPageUrl = getPageUrl(subItem.fields.link);
+                            return (
+                              <Link
+                                key={subItem.sys.id}
+                                href={subPageUrl}
+                                className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                                onClick={() => setIsOpen(false)}
+                              >
+                                {subItem.fields.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          </div>
         </div>
       </div>
     </nav>

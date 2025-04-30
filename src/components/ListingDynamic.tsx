@@ -106,23 +106,27 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
         )}
       </div>
 
-      <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
+      <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-4">
         {services.map((service, index) => {
           // Build the URL based on parent relationship
           const url = service.fields.parent
             ? `/services/${service.fields.parent.fields.slug}/${service.fields.slug}`
             : `/services/${service.fields.slug}`;
 
-          // Determine the size of each card based on its position
-          const isLarge = index % 5 === 0; // First card and every 5th card
-          const isMedium = index % 3 === 0; // Every 3rd card
+          // Determine the size of each card based on its position and total count
+          const totalServices = services.length;
+          const isLastRow = index >= Math.floor(totalServices / 4) * 4;
+          const isLarge = index % 4 === 0; // First card in each row
+          const isMedium = index % 4 === 1; // Second card in each row
+          
+          // Adjust column spans for the last row if it's not full
+          const lastRowColSpan = totalServices % 4;
+          const colSpan = isLastRow && lastRowColSpan > 0 
+            ? `lg:col-span-${Math.ceil(4 / lastRowColSpan)}`
+            : 'lg:col-span-1';
           
           return (
-            <div key={service.sys.id} className={`relative ${
-              isLarge ? 'lg:row-span-2' : 
-              isMedium ? 'max-lg:row-start-1 lg:col-start-2 lg:row-start-2' : 
-              'max-lg:row-start-3'
-            }`}>
+            <div key={service.sys.id} className={`relative ${colSpan}`}>
               <div className={`absolute inset-px rounded-lg bg-white ${
                 isLarge ? 'lg:rounded-l-[2rem]' : 
                 isMedium ? 'max-lg:rounded-t-[2rem]' : 
