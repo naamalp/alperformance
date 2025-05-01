@@ -42,18 +42,39 @@ export default function Navigation({ data }: NavigationProps) {
 
   const getPageUrl = (link: NavigationContentType['fields']['items'][0]['fields']['link']) => {
     // If no link or fields, return home
-    if (!link?.fields?.slug) return '/';
+    if (!link?.fields?.slug) {
+      console.log('No slug found for link:', link);
+      return '/';
+    }
     
-    // For regular pages, just use their slug
-    return `/${link.fields.slug}`;
+    // Check if the linked page has a parent
+    const parentSlug = link.fields.parent?.fields?.slug;
+    
+    // Construct URL with parent slug if it exists
+    const url = parentSlug 
+      ? `/${parentSlug}/${link.fields.slug}`
+      : `/${link.fields.slug}`;
+      
+    console.log('Constructed URL:', url, 'from link:', link);
+    return url;
   };
 
   const renderMenuItem = (item: NavigationContentType['fields']['items'][0]) => {
     // Skip if item or fields is missing
-    if (!item?.fields) return null;
+    if (!item?.fields) {
+      console.log('Item or fields missing:', item);
+      return null;
+    }
     
     const hasSubItems = item.fields.items && item.fields.items.length > 0;
     const pageUrl = getPageUrl(item.fields.link);
+    
+    console.log('Rendering menu item:', {
+      label: item.fields.label,
+      url: pageUrl,
+      hasSubItems,
+      subItems: item.fields.items
+    });
     
     return (
       <div key={item.sys.id} className="relative group">
@@ -68,9 +89,17 @@ export default function Navigation({ data }: NavigationProps) {
             <div className="py-1">
               {item.fields.items?.map((subItem) => {
                 // Skip if subItem or fields is missing
-                if (!subItem?.fields?.link) return null;
+                if (!subItem?.fields?.link) {
+                  console.log('SubItem or link missing:', subItem);
+                  return null;
+                }
                 
                 const subPageUrl = getPageUrl(subItem.fields.link);
+                console.log('Rendering submenu item:', {
+                  label: subItem.fields.label,
+                  url: subPageUrl
+                });
+                
                 return (
                   <Link
                     key={subItem.sys.id}
@@ -160,7 +189,7 @@ export default function Navigation({ data }: NavigationProps) {
       </div>
 
       {/* Mobile menu */}
-      <div className={`${isOpen ? 'block' : 'hidden'} lg:hidden`} role="dialog" aria-modal="true">
+      <div className={`${isOpen ? 'block' : 'hidden'} md:hidden`} role="dialog" aria-modal="true">
         {/* Background backdrop */}
         <div className="fixed inset-0 z-50 bg-gray-900/80" onClick={() => setIsOpen(false)}></div>
         
@@ -199,6 +228,8 @@ export default function Navigation({ data }: NavigationProps) {
                   if (!item?.fields) return null;
                   
                   const pageUrl = getPageUrl(item.fields.link);
+                  const hasSubItems = item.fields.items && item.fields.items.length > 0;
+                  
                   return (
                     <div key={item.sys.id}>
                       <Link
@@ -208,7 +239,7 @@ export default function Navigation({ data }: NavigationProps) {
                       >
                         {item.fields.label}
                       </Link>
-                      {item.fields.items && item.fields.items.length > 0 && (
+                      {hasSubItems && (
                         <div className="pl-4 space-y-2">
                           {item.fields.items.map((subItem) => {
                             if (!subItem?.fields?.link) return null;

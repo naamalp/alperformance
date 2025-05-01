@@ -118,7 +118,6 @@ export default function Feature({ data }: FeatureProps) {
           </div>
           <div className="relative">
             <div className="relative mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
-              <div className="absolute -top-4 -left-4 -right-4 -bottom-4 bg-blue-600/10 rounded-2xl" />
               <div className="relative rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 lg:-m-4 lg:rounded-2xl lg:p-4">
                 <img
                   src={`https:${data.fields.media.fields.image.fields.file.url}`}
@@ -126,10 +125,10 @@ export default function Feature({ data }: FeatureProps) {
                   className="w-full rounded-xl shadow-2xl ring-1 ring-gray-400/10 sm:w-[57rem]"
                 />
               </div>
-            </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 } 

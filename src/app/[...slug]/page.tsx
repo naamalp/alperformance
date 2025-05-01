@@ -53,14 +53,26 @@ async function getContentBySlug(slug: string) {
     // First try to get a service
     const serviceResponse = await client.getEntries({
       content_type: 'service',
-      'fields.slug': slug,
       include: 3
     });
 
-    if (serviceResponse.items.length) {
+    // Find the service that matches the slug pattern
+    const service = serviceResponse.items.find((item: any) => {
+      const serviceSlug = item.fields.slug;
+      const parentSlug = item.fields.parent?.fields?.slug;
+      
+      // If there's a parent, check if the slug matches parent/slug
+      if (parentSlug) {
+        return slug === `${parentSlug}/${serviceSlug}`;
+      }
+      // If no parent, check if the slug matches directly
+      return slug === serviceSlug;
+    });
+
+    if (service) {
       return {
         type: 'service',
-        data: serviceResponse.items[0] as unknown as ServiceContentType
+        data: service as unknown as ServiceContentType
       };
     }
 

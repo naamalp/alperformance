@@ -124,8 +124,8 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
           {services.map((service, index) => {
             // Build the URL based on parent relationship
             const url = service.fields.parent
-              ? `/services/${service.fields.parent.fields.slug}/${service.fields.slug}`
-              : `/services/${service.fields.slug}`;
+              ? `/${service.fields.parent.fields.slug}/${service.fields.slug}`
+              : `/${service.fields.slug}`;
 
             // Determine the size and position of each card based on its index
             let positionClasses = '';

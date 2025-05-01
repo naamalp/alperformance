@@ -19,11 +19,13 @@ export const metadata: Metadata = {
 async function getNavigationData() {
   const client = getContentfulClient();
   const query = {
-    content_type: 'navigation',
+    content_type: 'navigation' as const,
     limit: 1,
+    include: 3 as const, // Include up to 3 levels of linked entries
   };
   const response = await client.getEntries<NavigationContentType>(query);
-  return response.items[0] || null;
+  console.log('Navigation data:', JSON.stringify(response.items[0], null, 2));
+  return response.items[0] as unknown as NavigationContentType || null;
 }
 
 export default async function RootLayout({
