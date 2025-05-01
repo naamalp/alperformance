@@ -4,6 +4,7 @@ import { ServiceContentType, PageContentType } from '@/types/contentful';
 import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
+import RichText from '@/components/RichText';
 
 interface ContentfulEntry {
   sys: {
@@ -79,15 +80,8 @@ export default async function Page({
 
     return (
       <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {content.type === 'service' 
-              ? (content.data as ServiceContentType).fields.name 
-              : (content.data as PageContentType).fields.pageTitle}
-          </h1>
           
           {content.type === 'page' && (
-            <div className="mt-8">
               <div className="prose max-w-none">
                 {await Promise.all((content.data as PageContentType).fields.body?.map(async (item: ContentfulEntry) => {
                   const contentType = item.sys.contentType?.sys?.id;
@@ -96,6 +90,13 @@ export default async function Page({
                   if (contentType === 'heroBanner') {
                     const itemFields = item.fields;
                     const imageData = itemFields.image?.fields;
+                    
+                    console.log('Raw hero banner data:', {
+                      itemFields,
+                      imageData,
+                      imageUrl: itemFields.image?.fields?.file?.url,
+                      fullImage: itemFields.image
+                    });
                     
                     const heroBannerData = {
                       sys: {
@@ -106,24 +107,47 @@ export default async function Page({
                       fields: {
                         title: itemFields.title || '',
                         subTitle: itemFields.subTitle || '',
-                        image: {
+                        type: itemFields.type || 'Full Page',
+                        icon: itemFields.icon ? {
                           fields: {
+                            internalName: itemFields.icon.fields.internalName || '',
+                            altText: itemFields.icon.fields.altText || '',
                             image: {
                               fields: {
+                                title: itemFields.icon.fields.image.fields.title || '',
+                                description: itemFields.icon.fields.image.fields.description || '',
                                 file: {
-                                  url: imageData?.file?.url || '',
-                                  contentType: imageData?.file?.contentType || '',
+                                  url: itemFields.icon.fields.image.fields.file?.url || '',
+                                  contentType: itemFields.icon.fields.image.fields.file?.contentType || '',
                                   details: {
+                                    size: itemFields.icon.fields.image.fields.file?.details?.size || 0,
                                     image: {
-                                      width: imageData?.file?.details?.image?.width || 0,
-                                      height: imageData?.file?.details?.image?.height || 0
+                                      width: itemFields.icon.fields.image.fields.file?.details?.image?.width || 0,
+                                      height: itemFields.icon.fields.image.fields.file?.details?.image?.height || 0
                                     }
-                                  }
+                                  },
+                                  fileName: itemFields.icon.fields.image.fields.file?.fileName || ''
                                 }
                               }
                             }
                           }
-                        },
+                        } : undefined,
+                        image: itemFields.image ? {
+                          fields: {
+                            title: itemFields.image.fields.image.fields.title || '',
+                            description: itemFields.image.fields.image.fields.description || '',
+                            file: {
+                              url: `https:${itemFields.image.fields.image.fields.file?.url}` || '',
+                              contentType: itemFields.image.fields.image.fields.file?.contentType || '',
+                              details: {
+                                image: {
+                                  width: itemFields.image.fields.image.fields.file?.details?.image?.width || 0,
+                                  height: itemFields.image.fields.image.fields.file?.details?.image?.height || 0
+                                }
+                              }
+                            }
+                          }
+                        } : undefined,
                         ctaGroup: itemFields.ctaGroup?.map((cta: ContentfulEntry) => {
                           console.log('CTA fields:', JSON.stringify(cta.fields, null, 2));
                           return {
@@ -181,13 +205,16 @@ export default async function Page({
                     return <ListingDynamic key={item.sys.id} data={listingData} />;
                   }
 
+                  if (contentType === 'richText') {
+                    return <RichText key={item.sys.id} data={item} />;
+                  }
+
                   console.log('Unhandled content type:', contentType);
                   return null;
                 }) || [])}
               </div>
-            </div>
           )}
-        </div>
+
       </main>
     );
   } catch (error) {

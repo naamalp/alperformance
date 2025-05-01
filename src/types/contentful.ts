@@ -70,6 +70,7 @@ interface HeroBannerFields {
     };
   };
   ctaGroup: CTAContentType[];
+  type: 'Full Page' | 'Header';
 }
 
 interface HeroBannerContentType {
