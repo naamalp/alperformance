@@ -20,9 +20,6 @@ interface RichTextProps {
 }
 
 const options = {
-  renderText: (text: string) => {
-    return text;
-  },
   renderNode: {
     [BLOCKS.PARAGRAPH]: (node: any, children: any) => {
       // Skip paragraph rendering if parent is a list item
@@ -47,7 +44,21 @@ const options = {
       return <ol className="list-decimal list-inside mt-4 space-y-2">{children}</ol>;
     },
     [BLOCKS.LIST_ITEM]: (node: any, children: any) => {
-      return <li className="text-gray-600">{children}</li>;
+      // Extract text content directly from the node's content
+      const content = node.content.map((contentNode: any) => {
+        if (contentNode.nodeType === 'text') {
+          return contentNode.value;
+        }
+        if (contentNode.nodeType === 'paragraph') {
+          return contentNode.content
+            .filter((textNode: any) => textNode.nodeType === 'text')
+            .map((textNode: any) => textNode.value)
+            .join('');
+        }
+        return '';
+      }).join('');
+
+      return <li className="text-gray-600">{content}</li>;
     },
     [INLINES.HYPERLINK]: (node: any, children: any) => {
       return (
@@ -57,6 +68,9 @@ const options = {
       );
     },
   },
+  renderMark: {
+    bold: (text: React.ReactNode) => <strong>{text}</strong>,
+  },
 };
 
 export default function RichText({ data }: RichTextProps) {
@@ -65,7 +79,7 @@ export default function RichText({ data }: RichTextProps) {
     return null;
   }
 
-  const backgroundClass = data.fields.background === 'Dark' ? 'bg-gray-900' : 'bg-transparent';
+  const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
   const alignmentClass = {
     'Left': 'text-left',

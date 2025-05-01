@@ -39,9 +39,6 @@ interface FeatureProps {
 }
 
 const options = {
-  renderText: (text: string) => {
-    return text;
-  },
   renderNode: {
     [BLOCKS.PARAGRAPH]: (node: any, children: any) => {
       if (node.parentNode?.nodeType === 'list-item') {
@@ -65,7 +62,20 @@ const options = {
       return <ol className="list-decimal list-inside mt-4 space-y-2">{children}</ol>;
     },
     [BLOCKS.LIST_ITEM]: (node: any, children: any) => {
-      return <li className="text-gray-600">{children}</li>;
+      const content = node.content.map((contentNode: any) => {
+        if (contentNode.nodeType === 'text') {
+          return contentNode.value;
+        }
+        if (contentNode.nodeType === 'paragraph') {
+          return contentNode.content
+            .filter((textNode: any) => textNode.nodeType === 'text')
+            .map((textNode: any) => textNode.value)
+            .join('');
+        }
+        return '';
+      }).join('');
+
+      return <li className="text-gray-600">{content}</li>;
     },
     [INLINES.HYPERLINK]: (node: any, children: any) => {
       return (
@@ -75,10 +85,13 @@ const options = {
       );
     },
   },
+  renderMark: {
+    bold: (text: React.ReactNode) => <strong>{text}</strong>,
+  },
 };
 
 export default function Feature({ data }: FeatureProps) {
-  const backgroundClass = data.fields.background === 'Dark' ? 'bg-gray-900' : 'bg-transparent';
+  const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
   const alignmentClass = {
     'Left': 'text-left',
@@ -99,18 +112,7 @@ export default function Feature({ data }: FeatureProps) {
                 {data.fields.title}
               </p>
               <div className={`mt-6 max-w-xl text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                {documentToReactComponents(data.fields.body, {
-                  ...options,
-                  renderNode: {
-                    ...options.renderNode,
-                    [BLOCKS.PARAGRAPH]: (node: any, children: any) => {
-                      return <p className={`mt-4 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>{children}</p>;
-                    },
-                    [BLOCKS.LIST_ITEM]: (node: any, children: any) => {
-                      return <li className={data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}>{children}</li>;
-                    },
-                  }
-                })}
+                {documentToReactComponents(data.fields.body, options)}
               </div>
             </div>
           </div>
