@@ -120,7 +120,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
             {data.fields.subTitle}
           </p>
         )}
-        <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
           {services.map((service, index) => {
             // Build the URL based on parent relationship
             const url = service.fields.parent
@@ -135,19 +135,19 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                   positionClasses = 'relative lg:row-span-2';
                   break;
                 case 1: // Second service - first row
-                  positionClasses = 'relative max-lg:row-start-1';
+                  positionClasses = 'relative';
                   break;
                 case 2: // Third service - second row, second column
-                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-2 lg:row-start-2';
+                  positionClasses = 'relative lg:col-start-2 lg:row-start-2';
                   break;
                 case 3: // Fourth service - spans 2 rows
                   positionClasses = 'relative lg:row-span-2';
                   break;
                 case 4: // Fifth service - 50% width
-                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-1 lg:col-span-1';
+                  positionClasses = 'relative lg:col-start-1 lg:col-span-1';
                   break;
                 case 5: // Sixth service - 50% width
-                  positionClasses = 'relative max-lg:row-start-3 lg:col-start-2 lg:col-span-2';
+                  positionClasses = 'relative lg:col-start-2 lg:col-span-2';
                   break;
               }
             } else {
@@ -159,6 +159,10 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
             
             // Calculate border radius classes
             const roundedClasses = [
+              // Mobile border radius
+              index === 0 ? 'max-lg:rounded-t-[2rem]' : '',
+              index === 5 ? 'max-lg:rounded-b-[2rem]' : '',
+              // Desktop border radius
               index === 0 ? 'lg:rounded-tl-[2rem]' : '',
               index === 3 ? 'lg:rounded-tr-[2rem]' : '',
               index === 4 ? 'lg:rounded-bl-[2rem]' : '',
@@ -166,7 +170,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
             ].filter(Boolean).join(' ');
 
             return (
-              <div key={service.sys.id} className={positionClasses}>
+              <div key={service.sys.id} className={`${positionClasses} w-full`}>
                 <div className={`absolute inset-px rounded-lg bg-white ${roundedClasses}`}></div>
                 <Link
                   href={url}
@@ -182,7 +186,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                       </p>
                     )}
                   </div>
-                  <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-sm rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}>
+                  <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-full rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}>
                     {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
                       <>
                         <Image
@@ -190,7 +194,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                           alt={service.fields.featuredImage.fields.altText || service.fields.name}
                           width={service.fields.featuredImage.fields.image.fields.file.details.image.width}
                           height={service.fields.featuredImage.fields.image.fields.file.details.image.height}
-                          className="w-full object-contain object-center"
+                          className={`w-full object-contain object-center ${roundedClasses}`}
                         />
                       </>
                     )}

@@ -1,7 +1,13 @@
 import { EntrySkeletonType } from 'contentful';
 
 interface CTAFields {
-  label: string;
+  label: string | {
+    content: Array<{
+      content: Array<{
+        value: string;
+      }>;
+    }>;
+  };
   link: {
     sys: {
       id: string;

@@ -134,7 +134,16 @@ export default async function Page({
                             },
                             fields: {
                               label: cta.fields.label?.content?.[0]?.content?.[0]?.value || '',
-                              link: cta.fields.link,
+                              link: {
+                                sys: {
+                                  id: cta.fields.link.sys.id,
+                                  type: cta.fields.link.sys.type,
+                                  linkType: cta.fields.link.sys.linkType
+                                },
+                                fields: {
+                                  slug: cta.fields.link.fields.slug
+                                }
+                              },
                               type: cta.fields.type || 'Primary'
                             }
                           };

@@ -70,9 +70,7 @@ export default function HeroBanner({ data }: HeroBannerProps) {
               {data.fields.ctaGroup.map((cta) => (
                 <CTA
                   key={cta.sys.id}
-                  label={cta.fields.label}
-                  href={`/${cta.fields.link.fields.slug}`}
-                  type={cta.fields.type}
+                  data={cta}
                 />
               ))}
             </div>
