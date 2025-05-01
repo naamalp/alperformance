@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
 import RichText from '@/components/RichText';
+import Feature from '@/components/Feature';
 
 interface ContentfulEntry {
   sys: {
@@ -19,6 +20,29 @@ interface ContentfulEntry {
   };
   fields: {
     [key: string]: any;
+    internalName?: string;
+    title?: string;
+    body?: any;
+    media?: {
+      fields: {
+        image: {
+          fields: {
+            file: {
+              url: string;
+              contentType: string;
+              details: {
+                image: {
+                  width: number;
+                  height: number;
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    alignment?: 'Left' | 'Center' | 'Right';
+    background?: 'Light' | 'Dark';
   };
 }
 
@@ -207,6 +231,10 @@ export default async function Page({
 
                   if (contentType === 'richText') {
                     return <RichText key={item.sys.id} data={item} />;
+                  }
+
+                  if (contentType === 'feature') {
+                    return <Feature key={item.sys.id} data={item} />;
                   }
 
                   console.log('Unhandled content type:', contentType);

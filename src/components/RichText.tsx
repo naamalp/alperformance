@@ -20,8 +20,15 @@ interface RichTextProps {
 }
 
 const options = {
+  renderText: (text: string) => {
+    return text;
+  },
   renderNode: {
     [BLOCKS.PARAGRAPH]: (node: any, children: any) => {
+      // Skip paragraph rendering if parent is a list item
+      if (node.parentNode?.nodeType === 'list-item') {
+        return children;
+      }
       return <p className="mt-4 text-gray-600">{children}</p>;
     },
     [BLOCKS.HEADING_1]: (node: any, children: any) => {
@@ -58,7 +65,7 @@ export default function RichText({ data }: RichTextProps) {
     return null;
   }
 
-  const backgroundClass = data.fields.background === 'Dark' ? 'bg-gray-900' : 'bg-white';
+  const backgroundClass = data.fields.background === 'Dark' ? 'bg-gray-900' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
   const alignmentClass = {
     'Left': 'text-left',
