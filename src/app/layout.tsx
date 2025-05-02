@@ -7,6 +7,7 @@ import { NavigationContentType } from "@/types/contentful";
 import '@/lib/fontawesome';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
+import Footer from '@/components/Footer';
 
 // Tell Font Awesome to skip adding CSS automatically since we imported it above
 config.autoAddCss = false;
@@ -45,6 +46,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-white font-sans antialiased">
         <Navigation data={navigationData} />
         <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );
