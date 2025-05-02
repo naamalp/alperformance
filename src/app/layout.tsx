@@ -30,7 +30,6 @@ async function getNavigationData() {
     include: 3 as const, // Include up to 3 levels of linked entries
   };
   const response = await client.getEntries<NavigationContentType>(query);
-  console.log('Navigation data:', JSON.stringify(response.items[0], null, 2));
   return response.items[0] as unknown as NavigationContentType || null;
 }
 

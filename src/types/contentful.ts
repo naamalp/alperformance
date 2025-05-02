@@ -269,6 +269,7 @@ export interface FeatureContentType extends EntrySkeletonType {
   fields: {
     internalName: string;
     title: string;
+    style: 'Card' | 'Pricing';
     items: Array<{
       sys: {
         id: string;

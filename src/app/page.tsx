@@ -65,14 +65,15 @@ export default async function Home() {
   const query = {
     content_type: 'page' as const,
     'fields.slug': '/',
-    include: 3,
+    include: 10,
   };
   console.log('Contentful query:', query);
   const response = await client.getEntries<PageEntry>(query);
   console.log('Contentful response:', {
     total: response.total,
     items: response.items.length,
-    firstItem: response.items[0]?.fields
+    firstItem: response.items[0]?.fields,
+    includes: response.includes
   });
 
   const page = response.items[0];
@@ -86,8 +87,10 @@ export default async function Home() {
       {page.fields.body.map((item: ContentfulEntry) => {
         console.log('Rendering body item:', {
           contentType: item.sys.contentType?.sys.id,
-          fields: item.fields
+          fields: item.fields,
+          linkedItems: item.fields.items
         });
+
         switch (item.sys.contentType?.sys.id) {
           case 'heroBanner':
             return <HeroBanner key={item.sys.id} data={item} />;
@@ -98,6 +101,14 @@ export default async function Home() {
           case 'feature':
             return <Feature key={item.sys.id} data={item} />;
           case 'listingContent':
+            console.log('Found listingContent:', {
+              item,
+              fields: item.fields,
+              items: item.fields.items,
+              style: item.fields.style,
+              linkedItems: response.includes?.Entry
+            });
+            
             const listingContentData = {
               contentTypeId: 'listingContent' as const,
               sys: {
@@ -108,10 +119,13 @@ export default async function Home() {
               fields: {
                 internalName: item.fields.internalName || '',
                 title: item.fields.title || '',
+                style: item.fields.style || 'Card',
                 items: item.fields.items || [],
                 background: item.fields.background || 'Light'
               }
             } as FeatureContentType;
+            
+            console.log('Transformed listingContent data:', listingContentData);
             return <ListingContent key={item.sys.id} data={listingContentData} />;
           default:
             console.log('Unknown content type:', item.sys.contentType?.sys.id);

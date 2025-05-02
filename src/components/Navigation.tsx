@@ -43,7 +43,6 @@ export default function Navigation({ data }: NavigationProps) {
   const getPageUrl = (link: NavigationContentType['fields']['items'][0]['fields']['link']) => {
     // If no link or fields, return home
     if (!link?.fields?.slug) {
-      console.log('No slug found for link:', link);
       return '/';
     }
     
@@ -54,27 +53,18 @@ export default function Navigation({ data }: NavigationProps) {
     const url = parentSlug 
       ? `/${parentSlug}/${link.fields.slug}`
       : `/${link.fields.slug}`;
-      
-    console.log('Constructed URL:', url, 'from link:', link);
     return url;
   };
 
   const renderMenuItem = (item: NavigationContentType['fields']['items'][0]) => {
     // Skip if item or fields is missing
     if (!item?.fields) {
-      console.log('Item or fields missing:', item);
       return null;
     }
     
     const hasSubItems = item.fields.items && item.fields.items.length > 0;
     const pageUrl = getPageUrl(item.fields.link);
     
-    console.log('Rendering menu item:', {
-      label: item.fields.label,
-      url: pageUrl,
-      hasSubItems,
-      subItems: item.fields.items
-    });
     
     return (
       <div key={item.sys.id} className="relative group">
@@ -90,16 +80,9 @@ export default function Navigation({ data }: NavigationProps) {
               {item.fields.items?.map((subItem) => {
                 // Skip if subItem or fields is missing
                 if (!subItem?.fields?.link) {
-                  console.log('SubItem or link missing:', subItem);
                   return null;
                 }
-                
                 const subPageUrl = getPageUrl(subItem.fields.link);
-                console.log('Rendering submenu item:', {
-                  label: subItem.fields.label,
-                  url: subPageUrl
-                });
-                
                 return (
                   <Link
                     key={subItem.sys.id}

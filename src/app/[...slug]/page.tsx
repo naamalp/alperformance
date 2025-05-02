@@ -7,6 +7,7 @@ import ListingDynamic from '@/components/ListingDynamic';
 import RichText from '@/components/RichText';
 import Feature from '@/components/Feature';
 import ListingContent from '@/components/ListingContent';
+import ServiceLayout from '@/components/ServiceLayout';
 
 interface ContentfulEntry {
   sys: {
@@ -54,7 +55,7 @@ async function getContentBySlug(slug: string) {
     // First try to get a service
     const serviceResponse = await client.getEntries({
       content_type: 'service',
-      include: 3
+      include: 10
     });
 
     // Find the service that matches the slug pattern
@@ -81,7 +82,7 @@ async function getContentBySlug(slug: string) {
     const pageResponse = await client.getEntries({
       content_type: 'page',
       'fields.slug': slug,
-      include: 3
+      include: 10
     });
 
     if (pageResponse.items.length) {
@@ -115,7 +116,12 @@ export default async function Page({
       notFound();
     }
 
-    const pageContent = content.type === 'page' ? (content.data as PageContentType).fields.body : [];
+    // If it's a service, use the ServiceLayout
+    if (content.type === 'service') {
+      return <ServiceLayout data={content.data as ServiceContentType} />;
+    }
+
+    const pageContent = (content.data as PageContentType).fields.body;
 
     const renderContent = async (item: ContentfulEntry) => {
       const contentType = item.sys.contentType?.sys?.id;
@@ -266,7 +272,8 @@ export default async function Page({
         console.log('Found listingContent content type:', {
           item,
           fields: item.fields,
-          items: item.fields.items
+          items: item.fields.items,
+          style: item.fields.style
         });
         
         const listingContentData = {
@@ -279,6 +286,7 @@ export default async function Page({
           fields: {
             internalName: item.fields.internalName || '',
             title: item.fields.title || '',
+            style: item.fields.style || 'Card',
             items: item.fields.items || [],
             background: item.fields.background || 'Light'
           }
@@ -296,11 +304,9 @@ export default async function Page({
 
     return (
       <main className="min-h-screen bg-white">
-        {content.type === 'page' && (
-          <div className="prose max-w-none">
-            {renderedContent}
-          </div>
-        )}
+        <div className="prose max-w-none">
+          {renderedContent}
+        </div>
       </main>
     );
   } catch (error) {
