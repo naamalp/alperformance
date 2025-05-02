@@ -4,6 +4,12 @@ import "./globals.scss";
 import Navigation from "@/components/Navigation";
 import { getContentfulClient } from "@/lib/contentful";
 import { NavigationContentType } from "@/types/contentful";
+import '@/lib/fontawesome';
+import { config } from '@fortawesome/fontawesome-svg-core';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+
+// Tell Font Awesome to skip adding CSS automatically since we imported it above
+config.autoAddCss = false;
 
 const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],

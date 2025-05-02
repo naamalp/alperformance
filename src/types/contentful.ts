@@ -261,6 +261,70 @@ export interface NavigationContentType extends EntrySkeletonType {
   };
 }
 
+export interface FeatureContentType extends EntrySkeletonType {
+  contentTypeId: 'listingContent';
+  sys: {
+    id: string;
+  };
+  fields: {
+    internalName: string;
+    title: string;
+    items: Array<{
+      sys: {
+        id: string;
+      };
+      fields: {
+        internalName: string;
+        firstName: string;
+        lastName: string;
+        role: string;
+        internal: boolean;
+        linkedIn?: string;
+        twitter?: string;
+        email?: string;
+        bio: {
+          nodeType: string;
+          data: Record<string, any>;
+          content: Array<{
+            nodeType: string;
+            data: Record<string, any>;
+            content: Array<{
+              nodeType: string;
+              value: string;
+              marks: Array<any>;
+              data: Record<string, any>;
+            }>;
+          }>;
+        };
+        image: {
+          fields: {
+            internalName: string;
+            altText: string;
+            image: {
+              fields: {
+                title: string;
+                description: string;
+                file: {
+                  url: string;
+                  contentType: string;
+                  details: {
+                    size: number;
+                    image: {
+                      width: number;
+                      height: number;
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    }>;
+    background: 'Light' | 'Dark';
+  };
+}
+
 export type { 
   CTAFields, 
   CTAContentType, 

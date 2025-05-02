@@ -1,7 +1,11 @@
 import { getContentfulClient } from '@/lib/contentful';
 import HeroBanner from '@/components/HeroBanner';
 import ListingDynamic from '@/components/ListingDynamic';
+import RichText from '@/components/RichText';
+import Feature from '@/components/Feature';
+import ListingContent from '@/components/ListingContent';
 import { EntrySkeletonType } from 'contentful';
+import { FeatureContentType } from '@/types/contentful';
 
 interface ContentfulEntry {
   sys: {
@@ -89,6 +93,26 @@ export default async function Home() {
             return <HeroBanner key={item.sys.id} data={item} />;
           case 'listingDynamic':
             return <ListingDynamic key={item.sys.id} data={item} />;
+          case 'richText':
+            return <RichText key={item.sys.id} data={item} />;
+          case 'feature':
+            return <Feature key={item.sys.id} data={item} />;
+          case 'listingContent':
+            const listingContentData = {
+              contentTypeId: 'listingContent' as const,
+              sys: {
+                id: item.sys.id,
+                type: item.sys.type,
+                linkType: item.sys.linkType
+              },
+              fields: {
+                internalName: item.fields.internalName || '',
+                title: item.fields.title || '',
+                items: item.fields.items || [],
+                background: item.fields.background || 'Light'
+              }
+            } as FeatureContentType;
+            return <ListingContent key={item.sys.id} data={listingContentData} />;
           default:
             console.log('Unknown content type:', item.sys.contentType?.sys.id);
             return null;
