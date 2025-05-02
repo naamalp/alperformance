@@ -224,7 +224,7 @@ export default function Navigation({ data }: NavigationProps) {
                       </Link>
                       {hasSubItems && (
                         <div className="pl-4 space-y-2">
-                          {item.fields.items.map((subItem) => {
+                          {item.fields.items?.map((subItem) => {
                             if (!subItem?.fields?.link) return null;
                             
                             const subPageUrl = getPageUrl(subItem.fields.link);
