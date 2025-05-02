@@ -71,7 +71,7 @@ export default function ListingContent({ data }: ListingContentProps) {
                     <div className={`mt-5 text-sm leading-6 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       {item.fields.bio && documentToReactComponents(item.fields.bio, options)}
                     </div>
-                    {(item.fields.linkedIn || item.fields.twitter || item.fields.email) && (
+                    {(item.fields.linkedIn) && (
                       <div className="mt-6 flex gap-6 relative z-10">
                         {item.fields.linkedIn && (
                           <a 
