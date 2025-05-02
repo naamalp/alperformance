@@ -280,8 +280,6 @@ export interface FeatureContentType extends EntrySkeletonType {
         role: string;
         internal: boolean;
         linkedIn?: string;
-        twitter?: string;
-        email?: string;
         bio: {
           nodeType: string;
           data: Record<string, any>;
