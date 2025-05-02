@@ -146,6 +146,30 @@ interface ServiceFields {
       };
     };
   };
+  logo?: {
+    fields: {
+      internalName: string;
+      altText: string;
+      image: {
+        fields: {
+          title: string;
+          description: string;
+          file: {
+            url: string;
+            contentType: string;
+            details: {
+              size: number;
+              image: {
+                width: number;
+                height: number;
+              };
+            };
+            fileName: string;
+          };
+        };
+      };
+    };
+  };
   parent?: {
     sys: {
       id: string;
@@ -155,6 +179,8 @@ interface ServiceFields {
     };
   };
   body?: Array<HeroBannerContentType | ListingDynamicContentType>;
+  ctaGroup?: CTAContentType[];
+  features?: FeatureContentType[];
 }
 
 interface ServiceContentType {

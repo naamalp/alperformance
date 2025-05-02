@@ -164,11 +164,13 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
                     />
                   </div>
                 ) : (
-                  <div className="flex-shrink-0 h-6 w-6 text-gray-400">{item.Value}</div>
+                  <div className="flex-shrink-0 h-6 w-6 font-bold text-gray-400">{item.Value}</div>
                 )}
                 <span 
-                  className="ml-3 text-base text-gray-700" 
-                  dangerouslySetInnerHTML={{ __html: item.Label }} 
+                  className="ml-3 text-base text-gray-700"
+                  dangerouslySetInnerHTML={{ 
+                    __html: item.Label.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                  }} 
                 />
               </li>
             ))}
