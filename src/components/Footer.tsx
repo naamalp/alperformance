@@ -18,7 +18,6 @@ export default function Footer() {
         const response = await client.getEntry('7FMIdPlW6GP9JdFGBZcKlM', {
           include: 2 // Include 2 levels of linked entries
         });
-        console.log('Footer content response:', response);
         setFooterContent(response as unknown as NavigationContentType);
       } catch (err) {
         console.error('Error fetching footer content:', err);
@@ -51,12 +50,6 @@ export default function Footer() {
     );
   }
 
-  console.log('Rendering footer with content:', {
-    fields: footerContent.fields,
-    items: footerContent.fields.items,
-    logo: footerContent.fields.logo
-  });
-
   return (
     <footer className="bg-brand-primary-dark">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex flex-col md:items-center md:justify-between lg:px-8">
@@ -73,7 +66,6 @@ export default function Footer() {
         </div>
         <div className="flex justify-center space-x-6 my-4">
           {footerContent.fields.items?.map((item) => {
-            console.log('Navigation item:', item);
             const link = item.fields.link;
             if (!link || !link.fields) {
               console.warn('No link found for item:', item);

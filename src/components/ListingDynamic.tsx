@@ -12,7 +12,6 @@ interface ListingDynamicProps {
 
 async function getServices(limit?: number) {
   try {
-    console.log('Fetching services with limit:', limit);
     const client = getContentfulClient();
     
     const query = {
@@ -21,16 +20,8 @@ async function getServices(limit?: number) {
       include: 3,
       order: 'fields.order'
     };
-    console.log('Contentful query:', query);
 
     const response = await client.getEntries(query);
-    console.log('Contentful response:', {
-      total: response.total,
-      items: response.items.length,
-      firstItemFields: response.items[0]?.fields,
-      firstItemSys: response.items[0]?.sys,
-      firstItemFeaturedImage: response.items[0]?.fields?.featuredImage
-    });
 
     const sortedItems = response.items.sort((a, b) => {
       const orderA = Number(a.fields.order) || 999;
@@ -60,9 +51,7 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
   useEffect(() => {
     async function fetchServices() {
       try {
-        console.log('Starting to fetch services...');
         const fetchedServices = await getServices(data.fields.limit);
-        console.log('Fetched services:', fetchedServices);
         setServices(fetchedServices);
       } catch (error) {
         console.error('Error in fetchServices:', error);

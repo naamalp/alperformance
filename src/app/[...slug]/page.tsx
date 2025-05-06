@@ -286,6 +286,7 @@ export default async function Page({
           fields: {
             internalName: item.fields.internalName || '',
             title: item.fields.title || '',
+            subTitle: item.fields.subTitle || '',
             style: item.fields.style || 'Card',
             items: item.fields.items || [],
             background: item.fields.background || 'Light'

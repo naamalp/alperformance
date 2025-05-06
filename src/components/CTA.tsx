@@ -23,11 +23,6 @@ export default function CTA({ data }: CTAProps) {
   const { fields } = data;
   const { label, link, type = 'Primary', icon, iconPosition = 'Left' } = fields || {};
 
-  console.log('CTA Data:', {
-    icon,
-    iconPosition
-  });
-
   // Extract text from rich text structure
   const labelText = typeof label === 'string' 
     ? label 
@@ -38,9 +33,6 @@ export default function CTA({ data }: CTAProps) {
     Secondary: 'inline-flex items-center justify-center rounded-md border-2 border-brand-primary px-3.5 py-2.5 text-sm font-semibold text-brand-primary shadow-sm hover:bg-brand-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
     Link: 'inline-flex items-center justify-center text-sm font-semibold leading-6 text-brand-primary hover:text-brand-primary/80'
   };
-
-  // Get icon from Font Awesome and validate it
-  console.log('Icon:', icon);
   
   // Skip icon if value is 'None'
   if (icon === 'None') {
@@ -56,13 +48,10 @@ export default function CTA({ data }: CTAProps) {
   
   // Remove 'fa-' prefix if present and convert to camelCase
   const iconName = icon?.replace('fa-', '') || '';
-  console.log('Icon Name:', iconName);
   
   const iconDefinition = iconName 
     ? findIconDefinition({ prefix: 'fas', iconName: iconName as any }) || fas.faArrowRight
     : null;
-  
-  console.log('Icon Definition:', iconDefinition);
 
   return (
     <Link

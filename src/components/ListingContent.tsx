@@ -194,7 +194,7 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
         </div>
         <div className="mt-8">
           <a
-            href="#"
+            href="/contact"
             className="block w-full px-4 py-3 text-center text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Get started
@@ -206,7 +206,6 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
 );
 
 export default function ListingContent({ data }: ListingContentProps) {
-  console.log('ListingContent received data:', data);
 
   if (!data || !data.fields) {
     console.log('ListingContent: No data or fields found');
@@ -214,29 +213,25 @@ export default function ListingContent({ data }: ListingContentProps) {
   }
 
   const items = data.fields.items;
-  console.log('ListingContent items:', items);
+
 
   if (data.contentTypeId === 'listingContent') {
-    console.log('ListingContent: Content type is listingContent');
     
     const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
     const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
 
     // For testimonials
     if (data.fields.style === 'Testimonial') {
-      console.log('ListingContent: Rendering testimonials');
       return (
         <div className={`${backgroundClass} py-24 sm:py-32`}>
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className={`text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-                {data.fields.title}
+            <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                {data.fields.subTitle}
               </h2>
-              {data.fields.subTitle && (
-                <p className={`mt-2 text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {data.fields.subTitle}
-                </p>
-              )}
+              <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </p>
             </div>
             <TestimonialList 
               testimonials={items} 
@@ -249,19 +244,16 @@ export default function ListingContent({ data }: ListingContentProps) {
 
     // For pricing
     if (data.fields.style === 'Pricing') {
-      console.log('ListingContent: Rendering pricing');
       return (
         <div className={`${backgroundClass} py-24 sm:py-32`}>
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className={`text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-                {data.fields.title}
+            <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                {data.fields.subTitle}
               </h2>
-              {data.fields.subTitle && (
-                <p className={`mt-2 text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {data.fields.subTitle}
-                </p>
-              )}
+              <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </p>
             </div>
             <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
               {items.map((pkg) => (
@@ -280,12 +272,12 @@ export default function ListingContent({ data }: ListingContentProps) {
         <div className={`${backgroundClass} py-24 sm:py-32`}>
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-            <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-                {data.fields.subTitle}
-              </h2>
-              <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-                {data.fields.title}
-              </p>
+            <h2 className="text-center text-base/7 font-semibold text-indigo-600">{data.fields.title}</h2>
+              {data.fields.subTitle && (
+                <p className="mx-auto mt-2 max-w-lg text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
+                  {data.fields.subTitle}
+                </p>
+              )}
             </div>
             <div className="mt-16 space-y-24">
               {items.map((feature: any) => (

@@ -63,15 +63,6 @@ export default function HeroBanner({ data }: HeroBannerProps) {
   const imageUrl = data.fields.image?.fields?.file?.url;
   const iconUrl = data.fields.icon?.fields?.image?.fields?.file?.url;
   const type = data.fields.type || 'Full Page';
-  
-  console.log('HeroBanner data:', {
-    type,
-    iconUrl,
-    imageUrl,
-    iconData: data.fields.icon,
-    imageData: data.fields.image,
-    fullData: data
-  });
 
   if (type === 'Header') {
     return (
