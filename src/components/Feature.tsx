@@ -12,6 +12,7 @@ interface FeatureProps {
     };
     fields: {
       internalName: string;
+      subTitle: string;
       title: string;
       body: any;
       media: {
@@ -106,7 +107,7 @@ export default function Feature({ data }: FeatureProps) {
           <div className={`lg:pr-8 lg:pt-4 ${alignmentClass}`}>
             <div className="lg:max-w-lg">
               <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-                {data.fields.internalName}
+                {data.fields.subTitle}
               </h2>
               <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
                 {data.fields.title}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { NavigationContentType } from '@/types/contentful';
+import CTA from './CTA';
 
 interface NavigationProps {
   data: NavigationContentType | null;
@@ -38,7 +39,7 @@ export default function Navigation({ data }: NavigationProps) {
     );
   }
 
-  const { logo, items } = data.fields;
+  const { logo, items, cta } = data.fields;
 
   const getPageUrl = (link: NavigationContentType['fields']['items'][0]['fields']['link']) => {
     // If no link or fields, return home
@@ -101,7 +102,7 @@ export default function Navigation({ data }: NavigationProps) {
   };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-frosted-glass shadow-md' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
@@ -120,10 +121,11 @@ export default function Navigation({ data }: NavigationProps) {
           </div>
 
           {/* Desktop menu */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            <div className="flex items-baseline space-x-4">
               {items?.map(renderMenuItem)}
             </div>
+            {cta && <CTA data={cta} />}
           </div>
 
           {/* Mobile menu button */}
@@ -245,6 +247,11 @@ export default function Navigation({ data }: NavigationProps) {
                   );
                 })}
               </div>
+              {cta && (
+                <div className="py-6">
+                  <CTA data={cta} />
+                </div>
+              )}
             </div>
           </div>
         </div>

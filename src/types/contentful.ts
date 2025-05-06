@@ -23,6 +23,8 @@ interface CTAFields {
     };
   };
   type: 'Primary' | 'Secondary' | 'Link';
+  icon?: string;
+  iconPosition?: 'Left' | 'Right';
 }
 
 interface CTAContentType {
@@ -284,6 +286,7 @@ export interface NavigationContentType extends EntrySkeletonType {
         }>;
       };
     }>;
+    cta?: CTAContentType;
   };
 }
 

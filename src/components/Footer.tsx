@@ -59,8 +59,19 @@ export default function Footer() {
 
   return (
     <footer className="bg-brand-primary-dark">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
-        <div className="flex justify-center space-x-6 md:order-2">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:flex flex-col md:items-center md:justify-between lg:px-8">
+      <div className="flex items-center justify-center space-x-4 my-4">
+            {footerContent.fields.logo?.fields?.file?.url && (
+              <Image
+                src={`https:${footerContent.fields.logo.fields.file.url}`}
+                alt={footerContent.fields.logo.fields.title}
+                width={footerContent.fields.logo.fields.file.details.image.width}
+                height={footerContent.fields.logo.fields.file.details.image.height}
+                className="h-8 w-auto"
+              />
+            )}
+        </div>
+        <div className="flex justify-center space-x-6 my-4">
           {footerContent.fields.items?.map((item) => {
             console.log('Navigation item:', item);
             const link = item.fields.link;
@@ -79,21 +90,10 @@ export default function Footer() {
             );
           })}
         </div>
-        <div className="mt-8 md:order-1 md:mt-0">
-          <div className="flex items-center justify-center space-x-4">
-            {footerContent.fields.logo?.fields?.file?.url && (
-              <Image
-                src={`https:${footerContent.fields.logo.fields.file.url}`}
-                alt={footerContent.fields.logo.fields.title}
-                width={footerContent.fields.logo.fields.file.details.image.width}
-                height={footerContent.fields.logo.fields.file.details.image.height}
-                className="h-8 w-auto"
-              />
-            )}
+        <div className="mt-8 md:mt-0 my-4">
             <p className="text-center text-xs leading-5 text-gray-400">
               © {new Date().getFullYear()} AL Performance. All rights reserved.
             </p>
-          </div>
         </div>
       </div>
     </footer>

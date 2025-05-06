@@ -2,6 +2,14 @@
 
 import Link from 'next/link';
 import { CTAContentType } from '@/types/contentful';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconDefinition, library, findIconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+
+// Add all icons to the library
+library.add(fas, far, fab);
 
 interface CTAProps {
   data?: CTAContentType;
@@ -13,7 +21,12 @@ export default function CTA({ data }: CTAProps) {
   }
 
   const { fields } = data;
-  const { label, link, type = 'Primary' } = fields || {};
+  const { label, link, type = 'Primary', icon, iconPosition = 'Left' } = fields || {};
+
+  console.log('CTA Data:', {
+    icon,
+    iconPosition
+  });
 
   // Extract text from rich text structure
   const labelText = typeof label === 'string' 
@@ -26,12 +39,49 @@ export default function CTA({ data }: CTAProps) {
     Link: 'inline-flex items-center justify-center text-sm font-semibold leading-6 text-brand-primary hover:text-brand-primary/80'
   };
 
+  // Get icon from Font Awesome and validate it
+  console.log('Icon:', icon);
+  
+  // Skip icon if value is 'None'
+  if (icon === 'None') {
+    return (
+      <Link
+        href={link?.fields?.slug || '/'}
+        className={styleClasses[type]}
+      >
+        {labelText}
+      </Link>
+    );
+  }
+  
+  // Remove 'fa-' prefix if present and convert to camelCase
+  const iconName = icon?.replace('fa-', '') || '';
+  console.log('Icon Name:', iconName);
+  
+  const iconDefinition = iconName 
+    ? findIconDefinition({ prefix: 'fas', iconName: iconName as any }) || fas.faArrowRight
+    : null;
+  
+  console.log('Icon Definition:', iconDefinition);
+
   return (
     <Link
       href={link?.fields?.slug || '/'}
       className={styleClasses[type]}
     >
+      {iconDefinition && iconPosition === 'Left' && (
+        <FontAwesomeIcon 
+          icon={iconDefinition} 
+          className="mr-2 h-4 w-4" 
+        />
+      )}
       {labelText}
+      {iconDefinition && iconPosition === 'Right' && (
+        <FontAwesomeIcon 
+          icon={iconDefinition} 
+          className="ml-2 h-4 w-4" 
+        />
+      )}
     </Link>
   );
 } 
