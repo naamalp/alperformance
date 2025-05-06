@@ -8,12 +8,28 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import { BLOCKS } from '@contentful/rich-text-types';
 import { FeatureContentType } from '@/types/contentful';
+import Feature from './Feature';
+import TestimonialList from './TestimonialList';
 
 // Add all solid icons to the library
 library.add(fas);
 
 interface ListingContentProps {
-  data: FeatureContentType | null;
+  data: {
+    contentTypeId: string;
+    sys: {
+      id: string;
+      type: string;
+    };
+    fields: {
+      internalName: string;
+      title: string;
+      subTitle?: string;
+      items: Array<any>;
+      background?: 'Light' | 'Dark';
+      style?: 'default' | 'carousel' | 'Pricing' | 'Testimonial';
+    };
+  };
 }
 
 interface PackageItem {
@@ -190,34 +206,98 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
 );
 
 export default function ListingContent({ data }: ListingContentProps) {
+  console.log('ListingContent received data:', data);
+
   if (!data || !data.fields) {
+    console.log('ListingContent: No data or fields found');
     return null;
   }
 
-  const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
-  const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
+  const items = data.fields.items;
+  console.log('ListingContent items:', items);
 
-  return (
-    <div className={`${backgroundClass} py-24 sm:py-32`}>
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className={`text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-            {data.fields.title}
-          </h2>
+  if (data.contentTypeId === 'listingContent') {
+    console.log('ListingContent: Content type is listingContent');
+    
+    const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
+    const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
+
+    // For testimonials
+    if (data.fields.style === 'Testimonial') {
+      console.log('ListingContent: Rendering testimonials');
+      return (
+        <div className={`${backgroundClass} py-24 sm:py-32`}>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className={`text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </h2>
+              {data.fields.subTitle && (
+                <p className={`mt-2 text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {data.fields.subTitle}
+                </p>
+              )}
+            </div>
+            <TestimonialList 
+              testimonials={items} 
+              style="carousel"
+            />
+          </div>
         </div>
-        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {data.fields.items?.map((item) => {
-            if (!item || !item.fields) return null;
-            
-            if (data.fields.style === 'Card' && isCardItem(item)) {
-              return <CardItemComponent key={item.sys.id} item={item} textColorClass={textColorClass} />;
-            } else if (data.fields.style === 'Pricing' && isPackage(item)) {
-              return <PricingItem key={item.sys.id} package={item} textColorClass={textColorClass} />;
-            }
-            return null;
-          })}
+      );
+    }
+
+    // For pricing
+    if (data.fields.style === 'Pricing') {
+      console.log('ListingContent: Rendering pricing');
+      return (
+        <div className={`${backgroundClass} py-24 sm:py-32`}>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className={`text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </h2>
+              {data.fields.subTitle && (
+                <p className={`mt-2 text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {data.fields.subTitle}
+                </p>
+              )}
+            </div>
+            <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+              {items.map((pkg) => (
+                <PricingItem key={pkg.sys.id} package={pkg} textColorClass={textColorClass} />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      );
+    }
+
+    // For features
+    if (data.fields.title.toLowerCase().includes('feature')) {
+      console.log('ListingContent: Rendering features');
+      return (
+        <div className={`${backgroundClass} py-24 sm:py-32`}>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+            <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                {data.fields.subTitle}
+              </h2>
+              <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </p>
+            </div>
+            <div className="mt-16 space-y-24">
+              {items.map((feature: any) => (
+                <Feature key={feature.sys.id} data={feature} />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  console.log('ListingContent: No matching content type or title found');
+  return null;
 } 
