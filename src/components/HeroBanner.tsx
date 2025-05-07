@@ -66,7 +66,7 @@ export default function HeroBanner({ data }: HeroBannerProps) {
 
   if (type === 'Header') {
     return (
-      <div className="relative isolate overflow-hidden bg-white">
+      <div className="relative isolate bg-white">
         
         <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 sm:pb-32 lg:flex lg:px-8 lg:py-40">
           <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-xl lg:flex-shrink-0 lg:pt-8">
@@ -106,12 +106,12 @@ export default function HeroBanner({ data }: HeroBannerProps) {
             </div>
           </div>
           {imageUrl && (
-            <div className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-32">
-              <div className="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
+            <div className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-1 xl:ml-32 overflow-hidden">
+              <div className="w-full max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
                 <img
                   src={imageUrl}
                   alt={data.fields.image?.fields?.description || ''}
-                  className="max-h-[40rem] object-cover rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
+                  className="w-full max-h-[25rem] sm:max-h-[40rem] object-contain rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
                 />
               </div>
             </div>

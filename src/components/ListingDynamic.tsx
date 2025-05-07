@@ -175,17 +175,17 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
                       </p>
                     )}
                   </div>
-                  <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-full rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white ${roundedClasses}`}>
+                  <div className={`@container relative w-full grow max-lg:mx-auto max-lg:max-w-full rounded-[calc(var(--radius-lg)+1px)] rounded-lg bg-white flex flex-col justify-end ${roundedClasses}`}>
                     {service.fields.featuredImage?.fields?.image?.fields?.file?.url && (
-                      <>
+                      <div className="flex flex-col justify-end h-full">
                         <Image
                           src={`https:${service.fields.featuredImage.fields.image.fields.file.url}`}
                           alt={service.fields.featuredImage.fields.altText || service.fields.name}
                           width={service.fields.featuredImage.fields.image.fields.file.details.image.width}
                           height={service.fields.featuredImage.fields.image.fields.file.details.image.height}
-                          className={`w-full object-contain object-center ${roundedClasses}`}
+                          className={`w-full object-contain object-bottom ${roundedClasses}`}
                         />
-                      </>
+                      </div>
                     )}
                   </div>
                 </Link>

@@ -83,7 +83,7 @@ export default async function Home() {
   }
 
   return (
-    <main>
+    <>
       {page.fields.body.map((item: ContentfulEntry) => {
         console.log('Rendering body item:', {
           contentType: item.sys.contentType?.sys.id,
@@ -95,7 +95,25 @@ export default async function Home() {
           case 'heroBanner':
             return <HeroBanner key={item.sys.id} data={item} />;
           case 'listingDynamic':
-            return <ListingDynamic key={item.sys.id} data={item} />;
+            const listingData = {
+              sys: {
+                id: item.sys.id,
+                type: item.sys.type,
+                linkType: item.sys.linkType
+              },
+              fields: {
+                internalName: item.fields.internalName || '',
+                title: item.fields.title || '',
+                subTitle: item.fields.subTitle || '',
+                listingContent: item.fields.listingContent,
+                category: item.fields.category || '',
+                style: item.fields.style,
+                filters: item.fields.filters || false,
+                limit: item.fields.limit || 8,
+                pagination: item.fields.pagination || false
+              }
+            };
+            return <ListingDynamic key={item.sys.id} data={listingData} />;
           case 'richText':
             return <RichText key={item.sys.id} data={item} />;
           case 'feature':
@@ -154,6 +172,6 @@ export default async function Home() {
           </div>
         </div>
       </div>
-    </main>
+    </>
   );
 }

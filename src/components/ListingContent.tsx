@@ -27,7 +27,7 @@ interface ListingContentProps {
       subTitle?: string;
       items: Array<any>;
       background?: 'Light' | 'Dark';
-      style?: 'default' | 'carousel' | 'Pricing' | 'Testimonial';
+      style?: 'default' | 'carousel' | 'Pricing' | 'Testimonial' | 'Card';
     };
   };
 }
@@ -282,6 +282,29 @@ export default function ListingContent({ data }: ListingContentProps) {
             <div className="mt-16 space-y-24">
               {items.map((feature: any) => (
                 <Feature key={feature.sys.id} data={feature} />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // For team cards
+    if (data.fields.style === 'Card') {
+      return (
+        <div className={`${backgroundClass} py-24 sm:py-32`}>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                {data.fields.subTitle}
+              </h2>
+              <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+                {data.fields.title}
+              </p>
+            </div>
+            <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+              {items.map((item) => (
+                isCardItem(item) && <CardItemComponent key={item.sys.id} item={item} textColorClass={textColorClass} />
               ))}
             </div>
           </div>

@@ -304,11 +304,9 @@ export default async function Page({
     const renderedContent = await Promise.all(pageContent?.map(renderContent) || []);
 
     return (
-      <main className="min-h-screen bg-white">
-        <div className="prose max-w-none">
-          {renderedContent}
-        </div>
-      </main>
+    <div className="max-w-none">
+      {renderedContent}
+    </div>
     );
   } catch (error) {
     console.error('Error in DynamicPage:', error);
