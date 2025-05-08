@@ -405,6 +405,13 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
     return slug === serviceSlug;
   });
 
+  // Get the logo asset
+  const logoAsset = await client.getAsset('5wsadgwpKdFVVPahhdvCCM');
+  const logoUrl = logoAsset?.fields?.file?.url ? `https:${logoAsset.fields.file.url}` : undefined;
+  const logoWidth = logoAsset?.fields?.file?.details?.image?.width;
+  const logoHeight = logoAsset?.fields?.file?.details?.image?.height;
+  const logoAlt = logoAsset?.fields?.description || 'Company Logo';
+
   // If it's a service, use service metadata
   if (service) {
     try {
@@ -428,6 +435,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
             height: imageHeight,
             alt: imageAlt,
           }] : undefined,
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     } catch (error) {
@@ -440,6 +453,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
           description: service.fields.shortDescription,
           type: 'website',
           url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     }
@@ -475,6 +494,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
             height: imageHeight,
             alt: imageAlt,
           }] : undefined,
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     }
@@ -493,6 +518,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
           height: imageHeight,
           alt: imageAlt,
         }] : undefined,
+        logo: logoUrl ? {
+          url: logoUrl,
+          width: logoWidth,
+          height: logoHeight,
+          alt: logoAlt,
+        } : undefined,
       },
     };
   } catch (error) {
@@ -506,6 +537,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
           title: 'Page Not Found',
           description: 'The page you are looking for does not exist.',
           type: 'website',
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     }
@@ -518,6 +555,12 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
         description: page.fields.pageDescription,
         type: 'website',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+        logo: logoUrl ? {
+          url: logoUrl,
+          width: logoWidth,
+          height: logoHeight,
+          alt: logoAlt,
+        } : undefined,
       },
     };
   }

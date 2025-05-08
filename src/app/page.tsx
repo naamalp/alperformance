@@ -51,7 +51,13 @@ export async function generateMetadata() {
   };
   const pageResponse = await client.getEntries<PageEntry>(pageQuery);
   
-  // Then get the image asset directly using getAsset
+  // Get the logo asset
+  const logoAsset = await client.getAsset('5wsadgwpKdFVVPahhdvCCM');
+  const logoUrl = logoAsset?.fields?.file?.url ? `https:${logoAsset.fields.file.url}` : undefined;
+  const logoWidth = logoAsset?.fields?.file?.details?.image?.width;
+  const logoHeight = logoAsset?.fields?.file?.details?.image?.height;
+  const logoAlt = logoAsset?.fields?.description || 'Company Logo';
+  
   try {
     const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
     const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
@@ -73,11 +79,17 @@ export async function generateMetadata() {
             height: imageHeight,
             alt: imageAlt,
           }] : undefined,
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     }
 
-    const metadata = {
+    return {
       title: page.fields.pageTitle,
       description: page.fields.pageDescription,
       openGraph: {
@@ -91,10 +103,14 @@ export async function generateMetadata() {
           height: imageHeight,
           alt: imageAlt,
         }] : undefined,
+        logo: logoUrl ? {
+          url: logoUrl,
+          width: logoWidth,
+          height: logoHeight,
+          alt: logoAlt,
+        } : undefined,
       },
     };
-
-    return metadata;
   } catch (error) {
     // Return metadata without image if there's an error
     const page = pageResponse.items[0];
@@ -106,6 +122,12 @@ export async function generateMetadata() {
           title: 'Home',
           description: 'Welcome to our website',
           type: 'website',
+          logo: logoUrl ? {
+            url: logoUrl,
+            width: logoWidth,
+            height: logoHeight,
+            alt: logoAlt,
+          } : undefined,
         },
       };
     }
@@ -118,6 +140,12 @@ export async function generateMetadata() {
         description: page.fields.pageDescription,
         type: 'website',
         url: process.env.NEXT_PUBLIC_SITE_URL,
+        logo: logoUrl ? {
+          url: logoUrl,
+          width: logoWidth,
+          height: logoHeight,
+          alt: logoAlt,
+        } : undefined,
       },
     };
   }

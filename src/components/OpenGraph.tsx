@@ -12,6 +12,11 @@ interface OpenGraphProps {
     height?: number;
     alt?: string;
   };
+  logo?: {
+    url: string;
+    width?: number;
+    height?: number;
+  };
   type?: 'website' | 'article';
 }
 
@@ -20,6 +25,7 @@ export default function OpenGraph({
   description,
   url,
   image,
+  logo,
   type = 'website'
 }: OpenGraphProps) {
   return (
@@ -35,15 +41,25 @@ export default function OpenGraph({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       
+      {/* Logo tags */}
+      {logo && (
+        <>
+          <meta property="og:logo" content={logo.url} />
+          {logo.width && <meta property="og:logo:width" content={logo.width.toString()} />}
+          {logo.height && <meta property="og:logo:height" content={logo.height.toString()} />}
+          <meta property="og:logo:alt" content="AL Performance Logo" />
+        </>
+      )}
+      
       {/* Image tags */}
       {image && (
         <>
           <meta property="og:image" content={image.url} />
           {image.width && <meta property="og:image:width" content={image.width.toString()} />}
           {image.height && <meta property="og:image:height" content={image.height.toString()} />}
-          {image.alt && <meta property="og:image:alt" content={image.alt} />}
+          <meta property="og:image:alt" content="AL Performance" />
           <meta name="twitter:image" content={image.url} />
-          {image.alt && <meta name="twitter:image:alt" content={image.alt} />}
+          <meta name="twitter:image:alt" content="AL Performance" />
         </>
       )}
     </>
