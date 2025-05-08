@@ -382,32 +382,100 @@ export default async function Page({
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string[] };
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string[] } }): Promise<Metadata> {
+  const client = getContentfulClient();
   const slug = params.slug.join('/');
-  const content = await getContentBySlug(slug);
   
-  if (!content) {
-    return {
-      title: 'Page Not Found',
-      description: 'The requested page could not be found.',
-    };
-  }
-
-  if (content.type === 'service') {
-    const service = content.data as ServiceContentType;
-    return {
-      title: service.fields.name,
-      description: service.fields.shortDescription,
-    };
-  }
-
-  const page = content.data as PageContentType;
-  return {
-    title: page.fields.pageTitle,
-    description: page.fields.pageDescription,
+  // First get the page content
+  const pageQuery = {
+    content_type: 'page' as const,
+    'fields.slug': slug,
+    include: 3,
   };
+  const pageResponse = await client.getEntries<PageEntry>(pageQuery);
+  
+  // Then get the image asset directly using getAsset
+  try {
+    const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
+    const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
+    const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
+    const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
+    const imageAlt = defaultImage?.fields?.description || 'Page Not Found';
+
+    const page = pageResponse.items[0];
+    if (!page) {
+      return {
+        title: 'Page Not Found',
+        description: 'The page you are looking for does not exist.',
+        openGraph: {
+          title: 'Page Not Found',
+          description: 'The page you are looking for does not exist.',
+          type: 'website',
+          images: imageUrl ? [{
+            url: imageUrl,
+            width: imageWidth,
+            height: imageHeight,
+            alt: imageAlt,
+          }] : undefined,
+        },
+      };
+    }
+
+    const metadata = {
+      title: page.fields.pageTitle,
+      description: page.fields.pageDescription,
+      openGraph: {
+        title: page.fields.pageTitle,
+        description: page.fields.pageDescription,
+        type: 'website',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+        images: imageUrl ? [{
+          url: imageUrl,
+          width: imageWidth,
+          height: imageHeight,
+          alt: imageAlt,
+        }] : undefined,
+      },
+    };
+
+    console.log('Final Metadata:', {
+      title: metadata.title,
+      description: metadata.description,
+      openGraph: {
+        title: metadata.openGraph.title,
+        description: metadata.openGraph.description,
+        type: metadata.openGraph.type,
+        url: metadata.openGraph.url,
+        images: metadata.openGraph.images,
+      },
+    });
+
+    return metadata;
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    // Return metadata without image if there's an error
+    const page = pageResponse.items[0];
+    if (!page) {
+      return {
+        title: 'Page Not Found',
+        description: 'The page you are looking for does not exist.',
+        openGraph: {
+          title: 'Page Not Found',
+          description: 'The page you are looking for does not exist.',
+          type: 'website',
+        },
+      };
+    }
+
+    return {
+      title: page.fields.pageTitle,
+      description: page.fields.pageDescription,
+      openGraph: {
+        title: page.fields.pageTitle,
+        description: page.fields.pageDescription,
+        type: 'website',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+      },
+    };
+  }
 } 

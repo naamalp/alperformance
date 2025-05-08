@@ -105,12 +105,33 @@ interface ListingDynamicContentType {
   fields: ListingDynamicFields;
 }
 
-interface PageFields {
+export interface PageFields {
+  internalName: string;
   pageTitle: string;
   pageDescription: string;
   pageType: string;
   slug: string;
-  body: Array<HeroBannerContentType | ListingDynamicContentType>;
+  body: any[];
+  ogImage?: {
+    fields: {
+      image: {
+        fields: {
+          title: string;
+          description: string;
+          file: {
+            url: string;
+            contentType: string;
+            details: {
+              image: {
+                width: number;
+                height: number;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 }
 
 interface PageContentType {
@@ -122,67 +143,37 @@ interface PageContentType {
   fields: PageFields;
 }
 
-interface ServiceFields {
+export interface ServiceFields {
+  internalName: string;
   name: string;
   shortDescription: string;
+  description: any;
   slug: string;
-  featuredImage?: {
-    fields: {
-      altText: string;
-      internalName: string;
-      image: {
-        fields: {
-          title: string;
-          description: string;
-          file: {
-            url: string;
-            contentType: string;
-            details: {
-              image: {
-                width: number;
-                height: number;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-  logo?: {
-    fields: {
-      internalName: string;
-      altText: string;
-      image: {
-        fields: {
-          title: string;
-          description: string;
-          file: {
-            url: string;
-            contentType: string;
-            details: {
-              size: number;
-              image: {
-                width: number;
-                height: number;
-              };
-            };
-            fileName: string;
-          };
-        };
-      };
-    };
-  };
   parent?: {
-    sys: {
-      id: string;
-    };
     fields: {
       slug: string;
     };
   };
-  body?: Array<HeroBannerContentType | ListingDynamicContentType>;
-  ctaGroup?: CTAContentType[];
-  features?: FeatureContentType[];
+  ogImage?: {
+    fields: {
+      image: {
+        fields: {
+          title: string;
+          description: string;
+          file: {
+            url: string;
+            contentType: string;
+            details: {
+              image: {
+                width: number;
+                height: number;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 }
 
 interface ServiceContentType {

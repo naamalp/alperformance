@@ -36,30 +36,91 @@ interface PageEntry extends EntrySkeletonType {
     pageType: string;
     slug: string;
     body: ContentfulEntry[];
+    ogImage?: ContentfulEntry;
   };
 }
 
 export async function generateMetadata() {
   const client = getContentfulClient();
-  const query = {
+  
+  // First get the page content
+  const pageQuery = {
     content_type: 'page' as const,
     'fields.slug': '/',
     include: 3,
   };
-  const response = await client.getEntries<PageEntry>(query);
+  const pageResponse = await client.getEntries<PageEntry>(pageQuery);
+  
+  // Then get the image asset directly using getAsset
+  try {
+    const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
+    const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
+    const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
+    const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
+    const imageAlt = defaultImage?.fields?.description || 'Home';
+    const page = pageResponse.items[0];
+    if (!page) {
+      return {
+        title: 'Home',
+        description: 'Welcome to our website',
+        openGraph: {
+          title: 'Home',
+          description: 'Welcome to our website',
+          type: 'website',
+          images: imageUrl ? [{
+            url: imageUrl,
+            width: imageWidth,
+            height: imageHeight,
+            alt: imageAlt,
+          }] : undefined,
+        },
+      };
+    }
 
-  const page = response.items[0];
-  if (!page) {
+    const metadata = {
+      title: page.fields.pageTitle,
+      description: page.fields.pageDescription,
+      openGraph: {
+        title: page.fields.pageTitle,
+        description: page.fields.pageDescription,
+        type: 'website',
+        url: process.env.NEXT_PUBLIC_SITE_URL,
+        images: imageUrl ? [{
+          url: imageUrl,
+          width: imageWidth,
+          height: imageHeight,
+          alt: imageAlt,
+        }] : undefined,
+      },
+    };
+
+    return metadata;
+  } catch (error) {
+    // Return metadata without image if there's an error
+    const page = pageResponse.items[0];
+    if (!page) {
+      return {
+        title: 'Home',
+        description: 'Welcome to our website',
+        openGraph: {
+          title: 'Home',
+          description: 'Welcome to our website',
+          type: 'website',
+        },
+      };
+    }
+
     return {
-      title: 'Home',
-      description: 'Welcome to our website',
+      title: page.fields.pageTitle,
+      description: page.fields.pageDescription,
+      openGraph: {
+        title: page.fields.pageTitle,
+        description: page.fields.pageDescription,
+        type: 'website',
+        url: process.env.NEXT_PUBLIC_SITE_URL,
+      },
     };
   }
-
-  return {
-    title: page.fields.pageTitle,
-    description: page.fields.pageDescription,
-  };
 }
 
 export default async function Home() {
