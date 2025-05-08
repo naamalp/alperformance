@@ -386,7 +386,66 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
   const client = getContentfulClient();
   const slug = params.slug.join('/');
   
-  // First get the page content
+  // First try to get a service
+  const serviceResponse = await client.getEntries({
+    content_type: 'service',
+    include: 3
+  });
+
+  // Find the service that matches the slug pattern
+  const service = serviceResponse.items.find((item: any) => {
+    const serviceSlug = item.fields.slug;
+    const parentSlug = item.fields.parent?.fields?.slug;
+    
+    // If there's a parent, check if the slug matches parent/slug
+    if (parentSlug) {
+      return slug === `${parentSlug}/${serviceSlug}`;
+    }
+    // If no parent, check if the slug matches directly
+    return slug === serviceSlug;
+  });
+
+  // If it's a service, use service metadata
+  if (service) {
+    try {
+      const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
+      const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
+      const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
+      const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
+      const imageAlt = defaultImage?.fields?.description || service.fields.name;
+
+      return {
+        title: service.fields.name,
+        description: service.fields.shortDescription,
+        openGraph: {
+          title: service.fields.name,
+          description: service.fields.shortDescription,
+          type: 'website',
+          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+          images: imageUrl ? [{
+            url: imageUrl,
+            width: imageWidth,
+            height: imageHeight,
+            alt: imageAlt,
+          }] : undefined,
+        },
+      };
+    } catch (error) {
+      // Return metadata without image if there's an error
+      return {
+        title: service.fields.name,
+        description: service.fields.shortDescription,
+        openGraph: {
+          title: service.fields.name,
+          description: service.fields.shortDescription,
+          type: 'website',
+          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
+        },
+      };
+    }
+  }
+
+  // If not a service, get the page content
   const pageQuery = {
     content_type: 'page' as const,
     'fields.slug': slug,
@@ -394,7 +453,6 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
   };
   const pageResponse = await client.getEntries<PageEntry>(pageQuery);
   
-  // Then get the image asset directly using getAsset
   try {
     const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
     const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
@@ -421,7 +479,7 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
       };
     }
 
-    const metadata = {
+    return {
       title: page.fields.pageTitle,
       description: page.fields.pageDescription,
       openGraph: {
@@ -437,22 +495,7 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
         }] : undefined,
       },
     };
-
-    console.log('Final Metadata:', {
-      title: metadata.title,
-      description: metadata.description,
-      openGraph: {
-        title: metadata.openGraph.title,
-        description: metadata.openGraph.description,
-        type: metadata.openGraph.type,
-        url: metadata.openGraph.url,
-        images: metadata.openGraph.images,
-      },
-    });
-
-    return metadata;
   } catch (error) {
-    console.error('Error fetching image:', error);
     // Return metadata without image if there's an error
     const page = pageResponse.items[0];
     if (!page) {
