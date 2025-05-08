@@ -125,17 +125,19 @@ export default async function Page({
 
     const renderContent = async (item: ContentfulEntry) => {
       const contentType = item.sys.contentType?.sys?.id;
-      console.log('Content type:', contentType, 'Item:', JSON.stringify(item, null, 2));
+      console.log('Content type:', contentType);
       
       if (contentType === 'heroBanner') {
         const itemFields = item.fields;
         const imageData = itemFields.image?.fields;
         
-        console.log('Raw hero banner data:', {
-          itemFields,
-          imageData,
-          imageUrl: itemFields.image?.fields?.file?.url,
-          fullImage: itemFields.image
+        console.log('Hero banner data:', {
+          title: itemFields.title,
+          subTitle: itemFields.subTitle,
+          type: itemFields.type,
+          hasImage: !!itemFields.image,
+          hasIcon: !!itemFields.icon,
+          ctaCount: itemFields.ctaGroup?.length
         });
         
         const heroBannerData = {
@@ -189,7 +191,6 @@ export default async function Page({
               }
             } : undefined,
             ctaGroup: itemFields.ctaGroup?.map((cta: ContentfulEntry) => {
-              console.log('CTA fields:', JSON.stringify(cta.fields, null, 2));
               return {
                 sys: {
                   id: cta.sys.id,
@@ -219,8 +220,12 @@ export default async function Page({
       }
 
       if (contentType === 'listingDynamic') {
-        console.log('Found listingDynamic content type');
-        const itemFields = item.fields;
+        console.log('Listing dynamic data:', {
+          title: item.fields.title,
+          subTitle: item.fields.subTitle,
+          style: item.fields.style,
+          category: item.fields.category
+        });
         
         const listingData = {
           sys: {
@@ -229,19 +234,18 @@ export default async function Page({
             linkType: item.sys.linkType
           },
           fields: {
-            internalName: itemFields.internalName || '',
-            title: itemFields.title || '',
-            subTitle: itemFields.subTitle || '',
-            listingContent: itemFields.listingContent,
-            category: itemFields.category || '',
-            style: itemFields.style,
-            filters: itemFields.filters || false,
-            limit: itemFields.limit || 8,
-            pagination: itemFields.pagination || false
+            internalName: item.fields.internalName || '',
+            title: item.fields.title || '',
+            subTitle: item.fields.subTitle || '',
+            listingContent: item.fields.listingContent,
+            category: item.fields.category || '',
+            style: item.fields.style,
+            filters: item.fields.filters || false,
+            limit: item.fields.limit || 8,
+            pagination: item.fields.pagination || false
           }
         };
         
-        console.log('Listing data:', JSON.stringify(listingData, null, 2));
         return <ListingDynamic key={item.sys.id} data={listingData} />;
       }
 
@@ -250,6 +254,19 @@ export default async function Page({
       }
 
       if (contentType === 'feature') {
+        console.log('Raw feature data from Contentful:', {
+          title: item.fields.title,
+          subTitle: item.fields.subTitle,
+          alignment: item.fields.alignment,
+          background: item.fields.background,
+          mediaStyle: item.fields.mediaStyle,
+          mediaSize: item.fields.mediaSize,
+          hasMedia: !!item.fields.media,
+          hasCTA: !!item.fields.cta,
+          ctaLabel: item.fields.cta?.fields?.label,
+          ctaType: item.fields.cta?.fields?.type
+        });
+
         const featureData = {
           sys: {
             id: item.sys.id,
@@ -259,21 +276,73 @@ export default async function Page({
           fields: {
             internalName: item.fields.internalName || '',
             title: item.fields.title || '',
+            subTitle: item.fields.subTitle || '',
             body: item.fields.body || '',
-            media: item.fields.media,
+            media: item.fields.media || {
+              fields: {
+                image: {
+                  fields: {
+                    file: {
+                      url: '',
+                      contentType: '',
+                      details: {
+                        image: {
+                          width: 0,
+                          height: 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
             alignment: item.fields.alignment || 'Left',
-            background: item.fields.background || 'Light'
+            background: item.fields.background || 'Light',
+            mediaStyle: item.fields.mediaStyle,
+            mediaSize: item.fields.mediaSize || 'Medium',
+            cta: item.fields.cta ? {
+              sys: {
+                id: item.fields.cta.sys.id,
+                type: item.fields.cta.sys.type,
+                linkType: item.fields.cta.sys.linkType
+              },
+              fields: {
+                label: item.fields.cta.fields.label,
+                link: {
+                  sys: {
+                    id: item.fields.cta.fields.link.sys.id,
+                    type: item.fields.cta.fields.link.sys.type,
+                    linkType: item.fields.cta.fields.link.sys.linkType
+                  },
+                  fields: {
+                    slug: item.fields.cta.fields.link.fields.slug
+                  }
+                },
+                type: item.fields.cta.fields.type,
+                icon: item.fields.cta.fields.icon,
+                iconPosition: item.fields.cta.fields.iconPosition
+              }
+            } : undefined
           }
         };
+
+        console.log('Transformed feature data:', {
+          title: featureData.fields.title,
+          hasCTA: !!featureData.fields.cta,
+          ctaLabel: featureData.fields.cta?.fields?.label,
+          ctaType: featureData.fields.cta?.fields?.type
+        });
+
         return <Feature key={item.sys.id} data={featureData} />;
       }
 
       if (contentType === 'listingContent') {
-        console.log('Found listingContent content type:', {
-          item,
-          fields: item.fields,
-          items: item.fields.items,
-          style: item.fields.style
+        console.log('Listing content data:', {
+          title: item.fields.title,
+          subTitle: item.fields.subTitle,
+          style: item.fields.style,
+          itemCount: item.fields.items?.length,
+          background: item.fields.background
         });
         
         const listingContentData = {
@@ -293,7 +362,6 @@ export default async function Page({
           }
         } as FeatureContentType;
         
-        console.log('Transformed listingContent data:', listingContentData);
         return <ListingContent key={item.sys.id} data={listingContentData} />;
       }
 

@@ -2,6 +2,8 @@
 
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import { BLOCKS, INLINES } from '@contentful/rich-text-types';
+import CTA from './CTA';
+import { CTAContentType } from '@/types/contentful';
 
 interface FeatureProps {
   data: {
@@ -35,6 +37,9 @@ interface FeatureProps {
       };
       alignment: 'Left' | 'Center' | 'Right';
       background: 'Light' | 'Dark';
+      mediaStyle?: boolean;
+      mediaSize?: 'Small' | 'Medium' | 'Large';
+      cta?: CTAContentType;
     };
   };
 }
@@ -91,7 +96,43 @@ const options = {
   },
 };
 
+const getMediaSizeClass = (size?: 'Small' | 'Medium' | 'Large') => {
+  switch (size) {
+    case 'Small':
+      return 'max-w-sm mx-auto';
+    case 'Medium':
+      return 'max-w-xl mx-auto';
+    case 'Large':
+      return 'max-w-3xl mx-auto';
+    default:
+      return 'max-w-xl mx-auto';
+  }
+};
+
+const getMediaStyleClass = (hasStyle?: boolean) => {
+  if (hasStyle === false) {
+    return '';
+  }
+  return 'relative rounded-2xl bg-white/5 p-2 ring-1 ring-white/10';
+};
+
+const getImageStyleClass = (hasStyle?: boolean) => {
+  if (hasStyle === false) {
+    return 'w-full object-cover';
+  }
+  return 'w-full rounded-xl shadow-2xl ring-1 ring-gray-400/10 object-cover';
+};
+
 export default function Feature({ data }: FeatureProps) {
+  console.log('Feature component received data:', {
+    title: data.fields.title,
+    hasCTA: !!data.fields.cta,
+    cta: data.fields.cta,
+    mediaStyle: data.fields.mediaStyle,
+    mediaSize: data.fields.mediaSize,
+    mediaStyleType: typeof data.fields.mediaStyle
+  });
+  
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
   const alignmentClass = {
@@ -100,6 +141,32 @@ export default function Feature({ data }: FeatureProps) {
     'Right': 'text-right'
   }[data.fields.alignment];
 
+  const renderContent = () => {
+    console.log('Rendering feature content with CTA:', {
+      hasCTA: !!data.fields.cta,
+      cta: data.fields.cta
+    });
+
+    return (
+      <div className="lg:max-w-lg">
+        <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+          {data.fields.subTitle}
+        </h2>
+        <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+          {data.fields.title}
+        </p>
+        <div className={`mt-6 max-w-xl text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+          {documentToReactComponents(data.fields.body, options)}
+        </div>
+        {data.fields.cta && (
+          <div className="mt-8">
+            <CTA data={data.fields.cta} />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={`${backgroundClass} py-24 sm:py-32`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -107,55 +174,35 @@ export default function Feature({ data }: FeatureProps) {
           {data.fields.alignment === 'Left' ? (
             <>
               <div className="relative">
-                <div className="relative mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+                <div className={`relative ${getMediaSizeClass(data.fields.mediaSize)}`}>
                   {data.fields.media?.fields?.image?.fields?.file?.url && (
-                    <div className="relative rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 lg:-m-4 lg:rounded-2xl lg:p-4">
+                    <div className={getMediaStyleClass(data.fields.mediaStyle)}>
                       <img
                         src={`https:${data.fields.media.fields.image.fields.file.url}`}
                         alt={data.fields.title}
-                        className="w-full rounded-xl shadow-2xl ring-1 ring-gray-400/10 sm:w-[57rem]"
+                        className={getImageStyleClass(data.fields.mediaStyle)}
                       />
                     </div>
                   )}
                 </div>
               </div>
               <div className={`lg:pl-8 lg:pt-4 ${alignmentClass}`}>
-                <div className="lg:max-w-lg">
-                  <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-                    {data.fields.subTitle}
-                  </h2>
-                  <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-                    {data.fields.title}
-                  </p>
-                  <div className={`mt-6 max-w-xl text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {documentToReactComponents(data.fields.body, options)}
-                  </div>
-                </div>
+                {renderContent()}
               </div>
             </>
           ) : (
             <>
               <div className={`lg:pr-8 lg:pt-4 ${alignmentClass}`}>
-                <div className="lg:max-w-lg">
-                  <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
-                    {data.fields.subTitle}
-                  </h2>
-                  <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
-                    {data.fields.title}
-                  </p>
-                  <div className={`mt-6 max-w-xl text-lg leading-8 ${data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {documentToReactComponents(data.fields.body, options)}
-                  </div>
-                </div>
+                {renderContent()}
               </div>
               <div className="relative">
-                <div className="relative mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+                <div className={`relative ${getMediaSizeClass(data.fields.mediaSize)}`}>
                   {data.fields.media?.fields?.image?.fields?.file?.url && (
-                    <div className="relative rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 lg:-m-4 lg:rounded-2xl lg:p-4">
+                    <div className={getMediaStyleClass(data.fields.mediaStyle)}>
                       <img
                         src={`https:${data.fields.media.fields.image.fields.file.url}`}
                         alt={data.fields.title}
-                        className="w-full rounded-xl shadow-2xl ring-1 ring-gray-400/10 sm:w-[57rem]"
+                        className={getImageStyleClass(data.fields.mediaStyle)}
                       />
                     </div>
                   )}

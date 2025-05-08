@@ -117,7 +117,86 @@ export default async function Home() {
           case 'richText':
             return <RichText key={item.sys.id} data={item} />;
           case 'feature':
-            return <Feature key={item.sys.id} data={item} />;
+            console.log('Raw feature data from Contentful:', {
+              title: item.fields.title,
+              subTitle: item.fields.subTitle,
+              alignment: item.fields.alignment,
+              background: item.fields.background,
+              mediaStyle: item.fields.mediaStyle,
+              mediaSize: item.fields.mediaSize,
+              hasMedia: !!item.fields.media,
+              hasCTA: !!item.fields.cta,
+              ctaLabel: item.fields.cta?.fields?.label,
+              ctaType: item.fields.cta?.fields?.type
+            });
+
+            const featureData = {
+              sys: {
+                id: item.sys.id,
+                type: item.sys.type,
+                linkType: item.sys.linkType
+              },
+              fields: {
+                internalName: item.fields.internalName || '',
+                title: item.fields.title || '',
+                subTitle: item.fields.subTitle || '',
+                body: item.fields.body || '',
+                media: item.fields.media || {
+                  fields: {
+                    image: {
+                      fields: {
+                        file: {
+                          url: '',
+                          contentType: '',
+                          details: {
+                            image: {
+                              width: 0,
+                              height: 0
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                alignment: item.fields.alignment || 'Left',
+                background: item.fields.background || 'Light',
+                mediaStyle: item.fields.mediaStyle,
+                mediaSize: item.fields.mediaSize || 'Medium',
+                cta: item.fields.cta ? {
+                  sys: {
+                    id: item.fields.cta.sys.id,
+                    type: item.fields.cta.sys.type,
+                    linkType: item.fields.cta.sys.linkType
+                  },
+                  fields: {
+                    label: item.fields.cta.fields.label,
+                    link: {
+                      sys: {
+                        id: item.fields.cta.fields.link.sys.id,
+                        type: item.fields.cta.fields.link.sys.type,
+                        linkType: item.fields.cta.fields.link.sys.linkType
+                      },
+                      fields: {
+                        slug: item.fields.cta.fields.link.fields.slug
+                      }
+                    },
+                    type: item.fields.cta.fields.type,
+                    icon: item.fields.cta.fields.icon,
+                    iconPosition: item.fields.cta.fields.iconPosition
+                  }
+                } : undefined
+              }
+            };
+
+            console.log('Transformed feature data:', {
+              title: featureData.fields.title,
+              hasCTA: !!featureData.fields.cta,
+              ctaLabel: featureData.fields.cta?.fields?.label,
+              ctaType: featureData.fields.cta?.fields?.type
+            });
+
+            return <Feature key={item.sys.id} data={featureData} />;
           case 'listingContent':
             console.log('Found listingContent:', {
               item,

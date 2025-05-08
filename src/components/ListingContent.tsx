@@ -164,11 +164,11 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
     <div className="relative w-full">
       <div className="relative flex flex-col h-full p-8 bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 hover:shadow-lg transition-shadow duration-300">
         <div className="flex-1">
-          <h3 className={`text-2xl font-bold ${textColorClass}`}>{pkg.fields.packageName}</h3>
+          <h3 className="text-2xl font-bold text-gray-900">{pkg.fields.packageName}</h3>
           <p className="mt-2 text-lg text-gray-600">{pkg.fields.tagline}</p>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <span className="text-4xl font-bold tracking-tight text-gray-900">{pkg.fields.price}</span>
-          </div>
+          </div> */}
           <ul className="mt-8 space-y-4">
             {pkg.fields.items.map((item, index) => (
               <li key={index} className="flex items-start">
@@ -195,7 +195,7 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
         <div className="mt-8">
           <a
             href="/contact"
-            className="block w-full px-4 py-3 text-center text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="block w-full inline-flex items-center justify-center rounded-md bg-brand-primary-light px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-primary-light/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary-light"
           >
             Get started
           </a>
