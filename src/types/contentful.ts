@@ -84,23 +84,17 @@ interface HeroBannerContentType {
   fields: HeroBannerFields;
 }
 
-interface ListingDynamicFields {
-  internalName: string;
-  title?: string;
+export interface ListingDynamicFields {
+  title: string;
   subTitle?: string;
-  listingContent: 'Services' | 'Articles';
-  category?: string;
-  style: 'Bento' | 'Grid';
-  filters?: boolean;
   limit?: number;
   pagination?: boolean;
+  listingContent: 'Services' | 'Articles' | 'Testimonials';
 }
 
-interface ListingDynamicContentType {
+export interface ListingDynamicContentType {
   sys: {
     id: string;
-    type: string;
-    linkType: string;
   };
   fields: ListingDynamicFields;
 }
@@ -144,25 +138,23 @@ interface PageContentType {
 }
 
 export interface ServiceFields {
-  internalName: string;
   name: string;
-  shortDescription: string;
-  description: any;
   slug: string;
+  shortDescription?: string;
+  description?: string;
+  order?: number;
   parent?: {
     fields: {
       slug: string;
     };
   };
-  ogImage?: {
+  featuredImage?: {
     fields: {
+      altText?: string;
       image: {
         fields: {
-          title: string;
-          description: string;
           file: {
             url: string;
-            contentType: string;
             details: {
               image: {
                 width: number;

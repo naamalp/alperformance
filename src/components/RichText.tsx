@@ -89,7 +89,7 @@ export default function RichText({ data }: RichTextProps) {
   };
 
   return (
-    <div className={`${backgroundClass} py-12 px-4 sm:px-6 lg:px-8`}>
+    <div className={`${backgroundClass} mx-auto max-w-7xl px-6 lg:px-8`}>
       <div className={`py-12 px-4 prose max-w-none ${textColorClass} ${alignmentClass}`}>
         {documentToReactComponents(data.fields.richText, options)}
       </div>
