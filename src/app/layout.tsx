@@ -18,11 +18,6 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export const metadata: Metadata = {
-  title: "AL Performance",
-  description: "AL Performance - Your trusted automotive service provider",
-};
-
 async function getNavigationData() {
   const client = getContentfulClient();
   const response = await client.getEntry('76xMjdWQDx8Tf290hdvXrN', {

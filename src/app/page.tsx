@@ -52,11 +52,13 @@ export async function generateMetadata() {
   if (!page) {
     return {
       title: 'Home',
+      description: 'Welcome to our website',
     };
   }
 
   return {
     title: page.fields.pageTitle,
+    description: page.fields.pageDescription,
   };
 }
 
