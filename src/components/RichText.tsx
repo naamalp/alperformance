@@ -25,7 +25,7 @@ export default function RichText({ data }: RichTextProps) {
     return null;
   }
 
-  const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
+  const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark shadow-2xl sm:rounded-3xl' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
   const alignmentClass = {
     'Left': 'text-left',

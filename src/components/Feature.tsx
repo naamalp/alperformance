@@ -135,11 +135,7 @@ export default function Feature({ data }: FeatureProps) {
   
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
-  const alignmentClass = {
-    'Left': 'text-left',
-    'Center': 'text-center',
-    'Right': 'text-right'
-  }[data.fields.alignment];
+ 
 
   const renderContent = () => {
     console.log('Rendering feature content with CTA:', {
@@ -186,13 +182,13 @@ export default function Feature({ data }: FeatureProps) {
                   )}
                 </div>
               </div>
-              <div className={`lg:pl-8 lg:pt-4 ${alignmentClass}`}>
+              <div className="lg:pl-8 lg:pt-4">
                 {renderContent()}
               </div>
             </>
           ) : (
             <>
-              <div className={`lg:pr-8 lg:pt-4 ${alignmentClass}`}>
+              <div className="lg:pr-8 lg:pt-4">
                 {renderContent()}
               </div>
               <div className="relative">

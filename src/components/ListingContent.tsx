@@ -61,6 +61,7 @@ interface CardItem {
     lastName: string;
     role: string;
     internal: boolean;
+    featured?: boolean;
     linkedIn?: string;
     bio: any;
     image?: {
@@ -111,7 +112,7 @@ const options = {
 };
 
 const CardItemComponent = ({ item, textColorClass }: { item: CardItem; textColorClass: string }) => (
-  <article className="flex flex-col items-start">
+  <article className={`flex flex-col items-start ${item.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
     <div className="relative w-full">
       <div className="aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
         {item.fields.image?.fields?.image?.fields?.file?.url && (
@@ -302,7 +303,7 @@ export default function ListingContent({ data }: ListingContentProps) {
                 {data.fields.title}
               </p>
             </div>
-            <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+            <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6">
               {items.map((item) => (
                 isCardItem(item) && <CardItemComponent key={item.sys.id} item={item} textColorClass={textColorClass} />
               ))}
