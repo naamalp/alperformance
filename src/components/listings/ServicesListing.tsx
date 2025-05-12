@@ -1,10 +1,49 @@
 'use client';
 
-import { ListingDynamicContentType, ServiceContentType } from '@/types/contentful';
+import { ListingDynamicContentType } from '@/types/contentful';
 import { getContentfulClient } from '@/lib/contentful';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { Entry } from 'contentful';
+
+interface ServiceParent {
+  fields: {
+    name: string;
+    slug: string;
+    parent?: ServiceParent;
+  };
+}
+
+interface ServiceContentType {
+  sys: {
+    id: string;
+  };
+  fields: {
+    name: string;
+    slug: string;
+    shortDescription?: string;
+    parent?: ServiceParent;
+    featuredImage?: {
+      fields: {
+        image: {
+          fields: {
+            file: {
+              url: string;
+              details: {
+                image: {
+                  width: number;
+                  height: number;
+                };
+              };
+            };
+          };
+        };
+        altText: string;
+      };
+    };
+  };
+}
 
 interface ServicesListingProps {
   data: ListingDynamicContentType;
@@ -14,20 +53,84 @@ async function getServices(limit?: number) {
   try {
     const client = getContentfulClient();
     
+    // First, get all services
     const query = {
       content_type: 'service',
       limit: limit || 8,
-      include: 3,
+      include: 2, // Include the immediate parent
       order: 'fields.order'
     };
 
+    console.log('Fetching services with query:', query);
     const response = await client.getEntries(query);
+    console.log('Initial services response:', {
+      itemsFound: response.items.length,
+      firstItem: response.items[0]?.fields
+    });
 
-    const sortedItems = response.items.sort((a, b) => {
+    // For each service, fetch its parent page and its parent's parent
+    const servicesWithFullParentChain = await Promise.all(
+      response.items.map(async (service) => {
+        console.log('Processing service:', {
+          name: service.fields.name,
+          slug: service.fields.slug,
+          hasParent: !!service.fields.parent
+        });
+
+        const parent = service.fields.parent as Entry<any> | undefined;
+        if (parent) {
+          console.log('Fetching parent page:', {
+            id: parent.sys.id,
+            name: parent.fields.name,
+            slug: parent.fields.slug
+          });
+
+          // Fetch the parent page
+          const parentResponse = await client.getEntries({
+            content_type: 'page',
+            'sys.id': parent.sys.id,
+            include: 2 // Include the parent's parent
+          });
+
+          console.log('Parent page response:', {
+            itemsFound: parentResponse.items.length,
+            firstItem: parentResponse.items[0]?.fields
+          });
+
+          if (parentResponse.items.length > 0) {
+            // Replace the parent reference with the full parent entry
+            service.fields.parent = parentResponse.items[0];
+            const updatedParent = service.fields.parent as Entry<any>;
+            console.log('Updated service parent:', {
+              name: service.fields.name,
+              parentName: updatedParent.fields.name,
+              parentSlug: updatedParent.fields.slug,
+              hasGrandparent: !!updatedParent.fields.pageParent
+            });
+          }
+        }
+        return service;
+      })
+    );
+
+    const sortedItems = servicesWithFullParentChain.sort((a, b) => {
       const orderA = Number(a.fields.order) || 999;
       const orderB = Number(b.fields.order) || 999;
       return orderA - orderB;
     });
+
+    console.log('Final services:', sortedItems.map(service => {
+      const parent = service.fields.parent as Entry<any> | undefined;
+      const grandparent = parent?.fields?.pageParent as Entry<any> | undefined;
+      return {
+        name: service.fields.name,
+        slug: service.fields.slug,
+        parentName: parent?.fields?.name,
+        parentSlug: parent?.fields?.slug,
+        grandparentName: grandparent?.fields?.name,
+        grandparentSlug: grandparent?.fields?.slug
+      };
+    }));
 
     return sortedItems as unknown as ServiceContentType[];
   } catch (error) {
@@ -111,10 +214,19 @@ export default function ServicesListing({ data }: ServicesListingProps) {
         )}
         <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
           {services.map((service, index) => {
-            // Build the URL based on parent relationship
-            const url = service.fields.parent
-              ? `/${service.fields.parent.fields.slug}/${service.fields.slug}`
-              : `/${service.fields.slug}`;
+            // Build the URL based on nested parent relationships
+            let url = '';
+            let currentParent = service.fields.parent;
+            const slugs: string[] = [service.fields.slug];
+
+            // Add all parent slugs in order
+            while (currentParent?.fields?.slug) {
+              slugs.unshift(currentParent.fields.slug);
+              // For pages, use pageParent to get the next parent
+              currentParent = currentParent.fields.pageParent;
+            }
+
+            url = `/${slugs.join('/')}`;
 
             // Determine the size and position of each card based on its index
             let positionClasses = '';

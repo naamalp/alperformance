@@ -106,6 +106,34 @@ export interface PageFields {
   pageType: string;
   slug: string;
   body: any[];
+  pageParent?: {
+    sys: {
+      id: string;
+      type: string;
+      linkType: string;
+    };
+    fields: {
+      internalName: string;
+      pageTitle: string;
+      pageDescription: string;
+      pageType: string;
+      slug: string;
+      pageParent?: {
+        sys: {
+          id: string;
+          type: string;
+          linkType: string;
+        };
+        fields: {
+          internalName: string;
+          pageTitle: string;
+          pageDescription: string;
+          pageType: string;
+          slug: string;
+        };
+      };
+    };
+  };
   ogImage?: {
     fields: {
       image: {

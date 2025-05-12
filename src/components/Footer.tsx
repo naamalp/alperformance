@@ -42,7 +42,7 @@ export default function Footer() {
 
   if (error || !footerContent) {
     return (
-      <footer className="bg-brand-primary-dark">
+      <footer className="bg-brand-primary-dark mt-12">
         <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
           <div className="text-center text-red-500">{error || 'Footer content not available'}</div>
         </div>
@@ -51,7 +51,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-brand-primary-dark">
+    <footer className="bg-brand-primary-dark mt-12">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex flex-col md:items-center md:justify-between lg:px-8">
       <div className="flex items-center justify-center space-x-4 my-4">
             {footerContent.fields.logo?.fields?.file?.url && (

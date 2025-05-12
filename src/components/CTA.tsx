@@ -7,6 +7,7 @@ import { IconDefinition, library, findIconDefinition } from '@fortawesome/fontaw
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { far } from '@fortawesome/free-regular-svg-icons';
 import { fab } from '@fortawesome/free-brands-svg-icons';
+import { generateSlugFromReference } from '@/lib/utils';
 
 // Add all icons to the library
 library.add(fas, far, fab);
@@ -30,7 +31,7 @@ export default function CTA({ data }: CTAProps) {
 
   const styleClasses = {
     Primary: 'inline-flex items-center justify-center rounded-md bg-brand-primary-light px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-primary-light/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary-light',
-    Secondary: 'inline-flex items-center justify-center rounded-md border-2 border-brand-primary px-3.5 py-2.5 text-sm font-semibold text-brand-primary shadow-sm hover:bg-brand-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
+    Secondary: 'inline-flex items-center justify-center rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary-light',
     Link: 'inline-flex items-center justify-center text-sm font-semibold leading-6 text-brand-primary hover:text-brand-primary/80'
   };
   
@@ -38,7 +39,7 @@ export default function CTA({ data }: CTAProps) {
   if (icon === 'None') {
     return (
       <Link
-        href={link?.fields?.slug || '/'}
+        href={link?.fields ? `/${generateSlugFromReference(link)}` : '/'}
         className={styleClasses[type]}
       >
         {labelText}
@@ -55,7 +56,7 @@ export default function CTA({ data }: CTAProps) {
 
   return (
     <Link
-      href={link?.fields?.slug || '/'}
+      href={link?.fields ? `/${generateSlugFromReference(link)}` : '/'}
       className={styleClasses[type]}
     >
       {iconDefinition && iconPosition === 'Left' && (

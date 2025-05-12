@@ -1,567 +1,76 @@
-import { notFound } from 'next/navigation';
-import { getContentfulClient } from '@/lib/contentful';
-import { ServiceContentType, PageContentType, FeatureContentType } from '@/types/contentful';
 import { Metadata } from 'next';
-import HeroBanner from '@/components/HeroBanner';
-import ListingDynamic from '@/components/ListingDynamic';
-import RichText from '@/components/RichText';
-import Feature from '@/components/Feature';
-import ListingContent from '@/components/ListingContent';
-import ServiceLayout from '@/components/ServiceLayout';
+import { notFound } from 'next/navigation';
+import { getPageBySlug } from '@/lib/contentful';
+import { renderContent } from '@/lib/renderContent';
+import { PageContentType, ServiceContentType } from '@/types/contentful';
 
-interface ContentfulEntry {
-  sys: {
-    id: string;
-    type: string;
-    linkType: string;
-    contentType?: {
-      sys: {
-        id: string;
-      };
-    };
-  };
-  fields: {
-    [key: string]: any;
-    internalName?: string;
-    title?: string;
-    body?: any;
-    media?: {
-      fields: {
-        image: {
-          fields: {
-            file: {
-              url: string;
-              contentType: string;
-              details: {
-                image: {
-                  width: number;
-                  height: number;
-                };
-              };
-            };
-          };
-        };
-      };
-    };
-    alignment?: 'Left' | 'Center' | 'Right';
-    background?: 'Light' | 'Dark';
-  };
+interface PageProps {
+  params: Promise<{
+    slug: string[];
+  }>;
 }
 
-async function getContentBySlug(slug: string) {
+function isPageContent(content: PageContentType | ServiceContentType): content is PageContentType {
+  return 'pageTitle' in content.fields;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
-    const client = getContentfulClient();
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug.join('/');
+    console.log('Generating metadata for slug:', slug);
     
-    // First try to get a service
-    const serviceResponse = await client.getEntries({
-      content_type: 'service',
-      include: 10
-    });
+    const content = await getPageBySlug(slug);
 
-    // Find the service that matches the slug pattern
-    const service = serviceResponse.items.find((item: any) => {
-      const serviceSlug = item.fields.slug;
-      const parentSlug = item.fields.parent?.fields?.slug;
-      
-      // If there's a parent, check if the slug matches parent/slug
-      if (parentSlug) {
-        return slug === `${parentSlug}/${serviceSlug}`;
-      }
-      // If no parent, check if the slug matches directly
-      return slug === serviceSlug;
-    });
-
-    if (service) {
+    if (!content) {
+      console.log('No content found for metadata generation');
       return {
-        type: 'service',
-        data: service as unknown as ServiceContentType
+        title: 'Page Not Found',
       };
     }
 
-    // If no service found, try to get a page
-    const pageResponse = await client.getEntries({
-      content_type: 'page',
-      'fields.slug': slug,
-      include: 10
-    });
-
-    if (pageResponse.items.length) {
+    if (isPageContent(content)) {
       return {
-        type: 'page',
-        data: pageResponse.items[0] as unknown as PageContentType
+        title: content.fields.pageTitle,
+        description: content.fields.pageDescription,
+      };
+    } else {
+      return {
+        title: content.fields.name,
+        description: content.fields.shortDescription,
       };
     }
-
-    return null;
   } catch (error) {
-    console.error('Error fetching content:', error);
-    return null;
+    console.error('Error generating metadata:', error);
+    return {
+      title: 'Error',
+    };
   }
 }
 
-export default async function Page({
-  params,
-}: {
-  params: { slug: string[] };
-}) {
+export default async function Page({ params }: PageProps) {
   try {
-    const slug = params.slug.join('/');
-    console.log('Processing slug:', slug);
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug.join('/');
+    console.log('Rendering page for slug:', slug);
     
-    const content = await getContentBySlug(slug);
-    console.log('Content type:', content?.type);
-    
+    const content = await getPageBySlug(slug);
+
     if (!content) {
-      console.log('No content found for slug:', slug);
+      console.log('No content found, returning 404');
       notFound();
     }
 
-    // If it's a service, use the ServiceLayout
-    if (content.type === 'service') {
-      return <ServiceLayout data={content.data as ServiceContentType} />;
-    }
-
-    const pageContent = (content.data as PageContentType).fields.body;
-
-    const renderContent = async (item: ContentfulEntry) => {
-      const contentType = item.sys.contentType?.sys?.id;
-      console.log('Content type:', contentType);
-      
-      if (contentType === 'heroBanner') {
-        const itemFields = item.fields;
-        const imageData = itemFields.image?.fields;
-        
-        console.log('Hero banner data:', {
-          title: itemFields.title,
-          subTitle: itemFields.subTitle,
-          type: itemFields.type,
-          hasImage: !!itemFields.image,
-          hasIcon: !!itemFields.icon,
-          ctaCount: itemFields.ctaGroup?.length
-        });
-        
-        const heroBannerData = {
-          sys: {
-            id: item.sys.id,
-            type: item.sys.type,
-            linkType: item.sys.linkType
-          },
-          fields: {
-            title: itemFields.title || '',
-            subTitle: itemFields.subTitle || '',
-            type: itemFields.type || 'Full Page',
-            icon: itemFields.icon ? {
-              fields: {
-                internalName: itemFields.icon.fields.internalName || '',
-                altText: itemFields.icon.fields.altText || '',
-                image: {
-                  fields: {
-                    title: itemFields.icon.fields.image.fields.title || '',
-                    description: itemFields.icon.fields.image.fields.description || '',
-                    file: {
-                      url: itemFields.icon.fields.image.fields.file?.url || '',
-                      contentType: itemFields.icon.fields.image.fields.file?.contentType || '',
-                      details: {
-                        size: itemFields.icon.fields.image.fields.file?.details?.size || 0,
-                        image: {
-                          width: itemFields.icon.fields.image.fields.file?.details?.image?.width || 0,
-                          height: itemFields.icon.fields.image.fields.file?.details?.image?.height || 0
-                        }
-                      },
-                      fileName: itemFields.icon.fields.image.fields.file?.fileName || ''
-                    }
-                  }
-                }
-              }
-            } : undefined,
-            image: itemFields.image ? {
-              fields: {
-                title: itemFields.image.fields.image.fields.title || '',
-                description: itemFields.image.fields.image.fields.description || '',
-                file: {
-                  url: `https:${itemFields.image.fields.image.fields.file?.url}` || '',
-                  contentType: itemFields.image.fields.image.fields.file?.contentType || '',
-                  details: {
-                    image: {
-                      width: itemFields.image.fields.image.fields.file?.details?.image?.width || 0,
-                      height: itemFields.image.fields.image.fields.file?.details?.image?.height || 0
-                    }
-                  }
-                }
-              }
-            } : undefined,
-            ctaGroup: itemFields.ctaGroup?.map((cta: ContentfulEntry) => {
-              return {
-                sys: {
-                  id: cta.sys.id,
-                  type: cta.sys.type,
-                  linkType: cta.sys.linkType
-                },
-                fields: {
-                  label: cta.fields.label?.content?.[0]?.content?.[0]?.value || '',
-                  link: {
-                    sys: {
-                      id: cta.fields.link.sys.id,
-                      type: cta.fields.link.sys.type,
-                      linkType: cta.fields.link.sys.linkType
-                    },
-                    fields: {
-                      slug: cta.fields.link.fields.slug
-                    }
-                  },
-                  type: cta.fields.type || 'Primary'
-                }
-              };
-            }) || []
-          }
-        };
-        
-        return <HeroBanner key={item.sys.id} data={heroBannerData} />;
-      }
-
-      if (contentType === 'listingDynamic') {
-        console.log('Listing dynamic data:', {
-          title: item.fields.title,
-          subTitle: item.fields.subTitle,
-          style: item.fields.style,
-          category: item.fields.category
-        });
-        
-        const listingData = {
-          sys: {
-            id: item.sys.id,
-            type: item.sys.type,
-            linkType: item.sys.linkType
-          },
-          fields: {
-            internalName: item.fields.internalName || '',
-            title: item.fields.title || '',
-            subTitle: item.fields.subTitle || '',
-            listingContent: item.fields.listingContent,
-            category: item.fields.category || '',
-            style: item.fields.style,
-            filters: item.fields.filters || false,
-            limit: item.fields.limit || 8,
-            pagination: item.fields.pagination || false
-          }
-        };
-        
-        return <ListingDynamic key={item.sys.id} data={listingData} />;
-      }
-
-      if (contentType === 'richText') {
-        return <RichText key={item.sys.id} data={item} />;
-      }
-
-      if (contentType === 'feature') {
-        console.log('Raw feature data from Contentful:', {
-          title: item.fields.title,
-          subTitle: item.fields.subTitle,
-          alignment: item.fields.alignment,
-          background: item.fields.background,
-          mediaStyle: item.fields.mediaStyle,
-          mediaSize: item.fields.mediaSize,
-          hasMedia: !!item.fields.media,
-          hasCTA: !!item.fields.cta,
-          ctaLabel: item.fields.cta?.fields?.label,
-          ctaType: item.fields.cta?.fields?.type
-        });
-
-        const featureData = {
-          sys: {
-            id: item.sys.id,
-            type: item.sys.type,
-            linkType: item.sys.linkType
-          },
-          fields: {
-            internalName: item.fields.internalName || '',
-            title: item.fields.title || '',
-            subTitle: item.fields.subTitle || '',
-            body: item.fields.body || '',
-            media: item.fields.media || {
-              fields: {
-                image: {
-                  fields: {
-                    file: {
-                      url: '',
-                      contentType: '',
-                      details: {
-                        image: {
-                          width: 0,
-                          height: 0
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            alignment: item.fields.alignment || 'Left',
-            background: item.fields.background || 'Light',
-            mediaStyle: item.fields.mediaStyle,
-            mediaSize: item.fields.mediaSize || 'Medium',
-            cta: item.fields.cta ? {
-              sys: {
-                id: item.fields.cta.sys.id,
-                type: item.fields.cta.sys.type,
-                linkType: item.fields.cta.sys.linkType
-              },
-              fields: {
-                label: item.fields.cta.fields.label,
-                link: {
-                  sys: {
-                    id: item.fields.cta.fields.link.sys.id,
-                    type: item.fields.cta.fields.link.sys.type,
-                    linkType: item.fields.cta.fields.link.sys.linkType
-                  },
-                  fields: {
-                    slug: item.fields.cta.fields.link.fields.slug
-                  }
-                },
-                type: item.fields.cta.fields.type,
-                icon: item.fields.cta.fields.icon,
-                iconPosition: item.fields.cta.fields.iconPosition
-              }
-            } : undefined
-          }
-        };
-
-        console.log('Transformed feature data:', {
-          title: featureData.fields.title,
-          hasCTA: !!featureData.fields.cta,
-          ctaLabel: featureData.fields.cta?.fields?.label,
-          ctaType: featureData.fields.cta?.fields?.type
-        });
-
-        return <Feature key={item.sys.id} data={featureData} />;
-      }
-
-      if (contentType === 'listingContent') {
-        console.log('Listing content data:', {
-          title: item.fields.title,
-          subTitle: item.fields.subTitle,
-          style: item.fields.style,
-          itemCount: item.fields.items?.length,
-          background: item.fields.background
-        });
-        
-        const listingContentData = {
-          contentTypeId: 'listingContent' as const,
-          sys: {
-            id: item.sys.id,
-            type: item.sys.type,
-            linkType: item.sys.linkType
-          },
-          fields: {
-            internalName: item.fields.internalName || '',
-            title: item.fields.title || '',
-            subTitle: item.fields.subTitle || '',
-            style: item.fields.style || 'Card',
-            items: item.fields.items || [],
-            background: item.fields.background || 'Light'
-          }
-        } as FeatureContentType;
-        
-        return <ListingContent key={item.sys.id} data={listingContentData} />;
-      }
-
-      console.log('Unhandled content type:', contentType);
-      return null;
-    };
-
-    const renderedContent = await Promise.all(pageContent?.map(renderContent) || []);
+    const title = isPageContent(content) ? content.fields.pageTitle : content.fields.name;
+    console.log('Rendering content:', title);
 
     return (
-    <div className="max-w-none">
-      {renderedContent}
-    </div>
+      <main>
+        {renderContent(content)}
+      </main>
     );
   } catch (error) {
-    console.error('Error in DynamicPage:', error);
-    notFound();
-  }
-}
-
-export async function generateMetadata({ params }: { params: { slug: string[] } }): Promise<Metadata> {
-  const client = getContentfulClient();
-  const slug = params.slug.join('/');
-  
-  // First try to get a service
-  const serviceResponse = await client.getEntries({
-    content_type: 'service',
-    include: 3
-  });
-
-  // Find the service that matches the slug pattern
-  const service = serviceResponse.items.find((item: any) => {
-    const serviceSlug = item.fields.slug;
-    const parentSlug = item.fields.parent?.fields?.slug;
-    
-    // If there's a parent, check if the slug matches parent/slug
-    if (parentSlug) {
-      return slug === `${parentSlug}/${serviceSlug}`;
-    }
-    // If no parent, check if the slug matches directly
-    return slug === serviceSlug;
-  });
-
-  // Get the logo asset
-  const logoAsset = await client.getAsset('5wsadgwpKdFVVPahhdvCCM');
-  const logoUrl = logoAsset?.fields?.file?.url ? `https:${logoAsset.fields.file.url}` : undefined;
-  const logoWidth = logoAsset?.fields?.file?.details?.image?.width;
-  const logoHeight = logoAsset?.fields?.file?.details?.image?.height;
-  const logoAlt = logoAsset?.fields?.description || 'Company Logo';
-
-  // If it's a service, use service metadata
-  if (service) {
-    try {
-      const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
-      const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
-      const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
-      const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
-      const imageAlt = defaultImage?.fields?.description || service.fields.name;
-
-      return {
-        title: service.fields.name,
-        description: service.fields.shortDescription,
-        openGraph: {
-          title: service.fields.name,
-          description: service.fields.shortDescription,
-          type: 'website',
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
-          images: imageUrl ? [{
-            url: imageUrl,
-            width: imageWidth,
-            height: imageHeight,
-            alt: imageAlt,
-          }] : undefined,
-          logo: logoUrl ? {
-            url: logoUrl,
-            width: logoWidth,
-            height: logoHeight,
-            alt: logoAlt,
-          } : undefined,
-        },
-      };
-    } catch (error) {
-      // Return metadata without image if there's an error
-      return {
-        title: service.fields.name,
-        description: service.fields.shortDescription,
-        openGraph: {
-          title: service.fields.name,
-          description: service.fields.shortDescription,
-          type: 'website',
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
-          logo: logoUrl ? {
-            url: logoUrl,
-            width: logoWidth,
-            height: logoHeight,
-            alt: logoAlt,
-          } : undefined,
-        },
-      };
-    }
-  }
-
-  // If not a service, get the page content
-  const pageQuery = {
-    content_type: 'page' as const,
-    'fields.slug': slug,
-    include: 3,
-  };
-  const pageResponse = await client.getEntries<PageEntry>(pageQuery);
-  
-  try {
-    const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
-    const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
-    const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
-    const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
-    const imageAlt = defaultImage?.fields?.description || 'Page Not Found';
-
-    const page = pageResponse.items[0];
-    if (!page) {
-      return {
-        title: 'Page Not Found',
-        description: 'The page you are looking for does not exist.',
-        openGraph: {
-          title: 'Page Not Found',
-          description: 'The page you are looking for does not exist.',
-          type: 'website',
-          images: imageUrl ? [{
-            url: imageUrl,
-            width: imageWidth,
-            height: imageHeight,
-            alt: imageAlt,
-          }] : undefined,
-          logo: logoUrl ? {
-            url: logoUrl,
-            width: logoWidth,
-            height: logoHeight,
-            alt: logoAlt,
-          } : undefined,
-        },
-      };
-    }
-
-    return {
-      title: page.fields.pageTitle,
-      description: page.fields.pageDescription,
-      openGraph: {
-        title: page.fields.pageTitle,
-        description: page.fields.pageDescription,
-        type: 'website',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
-        images: imageUrl ? [{
-          url: imageUrl,
-          width: imageWidth,
-          height: imageHeight,
-          alt: imageAlt,
-        }] : undefined,
-        logo: logoUrl ? {
-          url: logoUrl,
-          width: logoWidth,
-          height: logoHeight,
-          alt: logoAlt,
-        } : undefined,
-      },
-    };
-  } catch (error) {
-    // Return metadata without image if there's an error
-    const page = pageResponse.items[0];
-    if (!page) {
-      return {
-        title: 'Page Not Found',
-        description: 'The page you are looking for does not exist.',
-        openGraph: {
-          title: 'Page Not Found',
-          description: 'The page you are looking for does not exist.',
-          type: 'website',
-          logo: logoUrl ? {
-            url: logoUrl,
-            width: logoWidth,
-            height: logoHeight,
-            alt: logoAlt,
-          } : undefined,
-        },
-      };
-    }
-
-    return {
-      title: page.fields.pageTitle,
-      description: page.fields.pageDescription,
-      openGraph: {
-        title: page.fields.pageTitle,
-        description: page.fields.pageDescription,
-        type: 'website',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${slug}`,
-        logo: logoUrl ? {
-          url: logoUrl,
-          width: logoWidth,
-          height: logoHeight,
-          alt: logoAlt,
-        } : undefined,
-      },
-    };
+    console.error('Error rendering page:', error);
+    throw error; // This will trigger the error boundary
   }
 } 

@@ -2,6 +2,8 @@
 
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import { BLOCKS, INLINES } from '@contentful/rich-text-types';
+import Image from 'next/image';
+import CTA from './CTA';
 
 interface RichTextProps {
   data: {
@@ -19,11 +21,21 @@ interface RichTextProps {
   };
 }
 
+// Helper function to render CTA
+const renderCTA = (entry: any) => {
+  return <CTA data={entry} />;
+};
+
 export default function RichText({ data }: RichTextProps) {
   if (!data?.fields?.richText) {
     console.log('No rich text content found:', data);
     return null;
   }
+
+  console.log('Rich Text Data:', {
+    content: data.fields.richText,
+    nodes: data.fields.richText.content
+  });
 
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark shadow-2xl sm:rounded-3xl' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
@@ -51,6 +63,15 @@ export default function RichText({ data }: RichTextProps) {
       [BLOCKS.HEADING_3]: (node: any, children: any) => {
         return <h3 className={`text-2xl font-bold mt-6 mb-3 ${textColorClass}`}>{children}</h3>;
       },
+      [BLOCKS.HEADING_4]: (node: any, children: any) => {
+        return <h4 className={`text-xl font-bold mt-6 mb-3 ${textColorClass}`}>{children}</h4>;
+      },
+      [BLOCKS.HEADING_5]: (node: any, children: any) => {
+        return <h5 className={`text-lg font-bold mt-5 mb-2 ${textColorClass}`}>{children}</h5>;
+      },
+      [BLOCKS.HEADING_6]: (node: any, children: any) => {
+        return <h6 className={`text-base font-bold mt-4 mb-2 ${textColorClass}`}>{children}</h6>;
+      },
       [BLOCKS.UL_LIST]: (node: any, children: any) => {
         return <ul className="list-disc list-inside mt-4 space-y-2">{children}</ul>;
       },
@@ -74,6 +95,75 @@ export default function RichText({ data }: RichTextProps) {
         }).join('');
 
         return <li className={data.fields.background === 'Dark' ? 'text-gray-300' : 'text-gray-600'}>{content}</li>;
+      },
+      [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
+        const { title, description, file } = node.data.target.fields;
+        const imageUrl = file.url;
+        const imageWidth = file.details.image.width;
+        const imageHeight = file.details.image.height;
+        const altText = description || title || '';
+
+        return (
+          <div className="my-8">
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+              <Image
+                src={`https:${imageUrl}`}
+                alt={altText}
+                width={imageWidth}
+                height={imageHeight}
+                className="object-cover"
+                priority={false}
+              />
+            </div>
+            {description && (
+              <p className={`mt-2 text-sm ${data.fields.background === 'Dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                {description}
+              </p>
+            )}
+          </div>
+        );
+      },
+      [BLOCKS.EMBEDDED_ENTRY]: (node: any) => {
+        console.log('Block Embedded Entry:', {
+          node,
+          target: node.data.target,
+          contentType: node.data.target?.sys?.contentType?.sys?.id
+        });
+
+        const entry = node.data.target;
+        
+        // Handle CTA entries
+        if (entry.sys.contentType.sys.id === 'cta') {
+          return (
+            <div className="my-8 flex justify-center">
+              {renderCTA(entry)}
+            </div>
+          );
+        }
+
+        // Handle other embedded entry types here
+        return null;
+      },
+      [INLINES.EMBEDDED_ENTRY]: (node: any) => {
+        console.log('Inline Embedded Entry:', {
+          node,
+          target: node.data.target,
+          contentType: node.data.target?.sys?.contentType?.sys?.id
+        });
+
+        const entry = node.data.target;
+        
+        // Handle CTA entries
+        if (entry.sys.contentType.sys.id === 'cta') {
+          return (
+            <div className="my-8 flex justify-center">
+              {renderCTA(entry)}
+            </div>
+          );
+        }
+
+        // Handle other embedded entry types here
+        return null;
       },
       [INLINES.HYPERLINK]: (node: any, children: any) => {
         return (
