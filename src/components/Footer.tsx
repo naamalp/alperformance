@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getContentfulClient } from '@/lib/contentful';
 import Link from 'next/link';
 import Image from 'next/image';
 import { NavigationContentType } from '@/types/contentful';
@@ -14,11 +13,12 @@ export default function Footer() {
   useEffect(() => {
     async function fetchFooterContent() {
       try {
-        const client = getContentfulClient();
-        const response = await client.getEntry('7FMIdPlW6GP9JdFGBZcKlM', {
-          include: 2 // Include 2 levels of linked entries
-        });
-        setFooterContent(response as unknown as NavigationContentType);
+        const response = await fetch('/api/footer');
+        if (!response.ok) {
+          throw new Error('Failed to fetch footer content');
+        }
+        const data = await response.json();
+        setFooterContent(data as NavigationContentType);
       } catch (err) {
         console.error('Error fetching footer content:', err);
         setError('Failed to load footer content');
@@ -53,16 +53,16 @@ export default function Footer() {
   return (
     <footer className="bg-brand-primary-dark mt-12">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex flex-col md:items-center md:justify-between lg:px-8">
-      <div className="flex items-center justify-center space-x-4 my-4">
-            {footerContent.fields.logo?.fields?.file?.url && (
-              <Image
-                src={`https:${footerContent.fields.logo.fields.file.url}`}
-                alt={footerContent.fields.logo.fields.title}
-                width={footerContent.fields.logo.fields.file.details.image.width}
-                height={footerContent.fields.logo.fields.file.details.image.height}
-                className="h-8 w-auto"
-              />
-            )}
+        <div className="flex items-center justify-center space-x-4 my-4">
+          {footerContent.fields.logo?.fields?.file?.url && (
+            <Image
+              src={`https:${footerContent.fields.logo.fields.file.url}`}
+              alt={footerContent.fields.logo.fields.title}
+              width={footerContent.fields.logo.fields.file.details.image.width}
+              height={footerContent.fields.logo.fields.file.details.image.height}
+              className="h-8 w-auto"
+            />
+          )}
         </div>
         <div className="flex justify-center space-x-6 my-4">
           {footerContent.fields.items?.map((item) => {
@@ -83,9 +83,9 @@ export default function Footer() {
           })}
         </div>
         <div className="mt-8 md:mt-0 my-4">
-            <p className="text-center text-xs leading-5 text-gray-400">
-              © {new Date().getFullYear()} AL Performance. All rights reserved.
-            </p>
+          <p className="text-center text-xs leading-5 text-gray-400">
+            © {new Date().getFullYear()} AL Performance. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

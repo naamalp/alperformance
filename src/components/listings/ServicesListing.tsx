@@ -60,53 +60,23 @@ async function getServices(limit?: number) {
       include: 2, // Include the immediate parent
       order: 'fields.order'
     };
-
-    console.log('Fetching services with query:', query);
-    const response = await client.getEntries(query);
-    console.log('Initial services response:', {
-      itemsFound: response.items.length,
-      firstItem: response.items[0]?.fields
-    });
-
+    const response = await client.delivery.getEntries(query);
     // For each service, fetch its parent page and its parent's parent
     const servicesWithFullParentChain = await Promise.all(
       response.items.map(async (service) => {
-        console.log('Processing service:', {
-          name: service.fields.name,
-          slug: service.fields.slug,
-          hasParent: !!service.fields.parent
-        });
-
         const parent = service.fields.parent as Entry<any> | undefined;
         if (parent) {
-          console.log('Fetching parent page:', {
-            id: parent.sys.id,
-            name: parent.fields.name,
-            slug: parent.fields.slug
-          });
-
           // Fetch the parent page
-          const parentResponse = await client.getEntries({
+          const parentResponse = await client.delivery.getEntries({
             content_type: 'page',
             'sys.id': parent.sys.id,
             include: 2 // Include the parent's parent
-          });
-
-          console.log('Parent page response:', {
-            itemsFound: parentResponse.items.length,
-            firstItem: parentResponse.items[0]?.fields
           });
 
           if (parentResponse.items.length > 0) {
             // Replace the parent reference with the full parent entry
             service.fields.parent = parentResponse.items[0];
             const updatedParent = service.fields.parent as Entry<any>;
-            console.log('Updated service parent:', {
-              name: service.fields.name,
-              parentName: updatedParent.fields.name,
-              parentSlug: updatedParent.fields.slug,
-              hasGrandparent: !!updatedParent.fields.pageParent
-            });
           }
         }
         return service;
@@ -118,19 +88,6 @@ async function getServices(limit?: number) {
       const orderB = Number(b.fields.order) || 999;
       return orderA - orderB;
     });
-
-    console.log('Final services:', sortedItems.map(service => {
-      const parent = service.fields.parent as Entry<any> | undefined;
-      const grandparent = parent?.fields?.pageParent as Entry<any> | undefined;
-      return {
-        name: service.fields.name,
-        slug: service.fields.slug,
-        parentName: parent?.fields?.name,
-        parentSlug: parent?.fields?.slug,
-        grandparentName: grandparent?.fields?.name,
-        grandparentSlug: grandparent?.fields?.slug
-      };
-    }));
 
     return sortedItems as unknown as ServiceContentType[];
   } catch (error) {
@@ -157,7 +114,6 @@ export default function ServicesListing({ data }: ServicesListingProps) {
         const fetchedServices = await getServices(data.fields.limit);
         setServices(fetchedServices);
       } catch (error) {
-        console.error('Error in fetchServices:', error);
         setError(error instanceof Error ? error.message : 'Unknown error occurred');
       } finally {
         setLoading(false);

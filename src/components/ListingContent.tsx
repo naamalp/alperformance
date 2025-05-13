@@ -13,6 +13,7 @@ import TestimonialList from './TestimonialList';
 import { getContentfulClient } from '@/lib/contentful';
 import { useEffect, useState } from 'react';
 import PersonListing from './PersonListing';
+import parse from 'html-react-parser';
 
 // Add all solid icons to the library
 library.add(fas);
@@ -25,7 +26,7 @@ interface ListingContentProps {
       subTitle?: string;
       items: Array<CardItem | Package | PersonItem>;
       background?: 'Light' | 'Dark';
-      style: 'Card' | 'Pricing';
+      style: 'Card' | 'Pricing' | 'Testimonial';
       contentTypeId: string;
     };
   };
@@ -99,13 +100,14 @@ interface Package {
   };
   fields: {
     internalName: string;
-    title: string;
-    subTitle?: string;
-    description?: any;
-    price?: string;
-    features?: string[];
-    ctaText?: string;
-    ctaLink?: string;
+    packageName: string;
+    tagline: string;
+    price: string;
+    items: Array<{
+      Label: string;
+      ValueType: 'text' | 'icon';
+      Value: string;
+    }>;
     featured?: boolean;
   };
 }
@@ -171,53 +173,72 @@ const CardItemComponent = ({ item, textColorClass }: { item: CardItem; textColor
   </article>
 );
 
-const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textColorClass: string }) => (
-  <div className={`flex flex-col justify-between rounded-3xl bg-white p-8 ring-1 ring-gray-200 xl:p-10 ${pkg.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
-    <div>
-      <div className="flex items-center justify-between gap-x-4">
-        <h3 className={`text-lg font-semibold leading-8 ${textColorClass}`}>{pkg.fields.title}</h3>
-        {pkg.fields.featured && (
-          <p className="rounded-full bg-blue-600/10 px-2.5 py-1 text-xs font-semibold leading-5 text-blue-600">
-            Most popular
-          </p>
+const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textColorClass: string }) => {
+  // Helper function to safely parse HTML content
+  const parseHtmlContent = (content: string) => {
+    try {
+      // First, decode any HTML entities
+      const decodedContent = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      return parse(decodedContent);
+    } catch (error) {
+      console.error('Error parsing HTML content:', error);
+      return content;
+    }
+  };
+
+  return (
+    <div className={`flex flex-col justify-between rounded-3xl bg-white p-8 ring-1 ring-gray-200 xl:p-10 ${pkg.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
+      <div>
+        <div className="flex items-center justify-between gap-x-4">
+          <h3 className="text-lg font-semibold text-blue-600 leading-8">{pkg.fields.packageName}</h3>
+          {pkg.fields.featured && (
+            <p className="rounded-full bg-blue-600/10 px-2.5 py-1 text-xs font-semibold leading-5 text-blue-600">
+              Most popular
+            </p>
+          )}
+        </div>
+        {pkg.fields.tagline && (
+          <p className="mt-4 text-sm leading-6 text-gray-600">{pkg.fields.tagline}</p>
+        )}
+        {pkg.fields.items && pkg.fields.items.length > 0 && (
+          <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-gray-600">
+            {pkg.fields.items.map((item) => (
+              <li key={item.Label} className="flex gap-x-3">
+                {item.ValueType === 'icon' ? (
+                  <svg className="h-6 w-5 flex-none text-blue-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                ) : null}
+                <span className="flex items-center gap-x-1">
+                  {item.ValueType === 'text' ? (
+                    <>
+                      {item.Value && (
+                        <span className="text-gray-500">
+                          {parseHtmlContent(item.Value)}
+                        </span>
+                      )}
+                      <span className="font-medium">{parseHtmlContent(item.Label)}</span>
+                    </>
+                  ) : (
+                    parseHtmlContent(item.Label)
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
-      {pkg.fields.subTitle && (
-        <p className="mt-4 text-sm leading-6 text-gray-600">{pkg.fields.subTitle}</p>
-      )}
-      <p className="mt-6 flex items-baseline gap-x-1">
-        <span className="text-4xl font-bold tracking-tight text-gray-900">{pkg.fields.price}</span>
-      </p>
-      <div className="mt-8 text-sm leading-6 text-gray-600">
-        {pkg.fields.description && documentToReactComponents(pkg.fields.description, options)}
+      <div className="mt-8">
+        <a
+          href="/contact"
+          className="block w-full rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          Get Started
+        </a>
       </div>
-      {pkg.fields.features && pkg.fields.features.length > 0 && (
-        <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-gray-600">
-          {pkg.fields.features.map((feature) => (
-            <li key={feature} className="flex gap-x-3">
-              <svg className="h-6 w-5 flex-none text-blue-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-              </svg>
-              {feature}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
-    {pkg.fields.ctaLink && pkg.fields.ctaText && (
-      <a
-        href={pkg.fields.ctaLink}
-        className={`mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-          pkg.fields.featured
-            ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-500 focus-visible:outline-blue-600'
-            : 'bg-blue-600 text-white shadow-sm hover:bg-blue-500 focus-visible:outline-blue-600'
-        }`}
-      >
-        {pkg.fields.ctaText}
-      </a>
-    )}
-  </div>
-);
+  );
+};
 
 function isPersonItem(item: any): item is PersonItem {
   return (
@@ -233,14 +254,66 @@ export default function ListingContent({ data }: ListingContentProps) {
 
   // If all items are persons, render the PersonListing component
   if (allItemsArePersons) {
+    const personItems = data.fields.items.filter(isPersonItem);
+    console.log('Transforming person items:', {
+      items: personItems.map(item => ({
+        id: item.sys.id,
+        name: `${item.fields.firstName} ${item.fields.lastName}`,
+        image: {
+          exists: !!item.fields.image,
+          type: item.fields.image ? typeof item.fields.image : 'none',
+          hasFields: item.fields.image?.fields ? 'yes' : 'no',
+          hasFile: item.fields.image?.fields?.file ? 'yes' : 'no',
+          hasUrl: item.fields.image?.fields?.file?.url ? 'yes' : 'no',
+          url: item.fields.image?.fields?.file?.url,
+          fullImage: item.fields.image
+        }
+      }))
+    });
+
     const personData = {
       ...data,
       fields: {
         ...data.fields,
-        items: data.fields.items as PersonItem[]
+        items: personItems.map(item => ({
+          ...item,
+          fields: {
+            ...item.fields,
+            image: item.fields.image?.fields?.file ? {
+              fields: {
+                file: item.fields.image.fields.file
+              }
+            } : undefined
+          }
+        }))
       }
     };
     return <PersonListing data={personData} />;
+  }
+
+  // Check if this is a testimonials listing
+  const isTestimonials = data.fields.style === 'Testimonial';
+  if (isTestimonials) {
+    // Transform the testimonial data to match the expected structure
+    const transformedTestimonials = data.fields.items.map((item: any) => ({
+      sys: {
+        id: item.sys.id,
+        type: item.sys.type,
+        linkType: item.sys.linkType
+      },
+      fields: {
+        internalName: item.fields.internalName,
+        active: item.fields.active,
+        name: item.fields.name,
+        role: item.fields.role,
+        personImage: item.fields.personImage,
+        organisation: item.fields.organisation,
+        organisationImage: item.fields.organisationImage,
+        rating: item.fields.rating,
+        quote: item.fields.quote
+      }
+    }));
+    return <TestimonialList testimonials={transformedTestimonials} style="carousel" />;
   }
 
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
@@ -257,7 +330,7 @@ export default function ListingContent({ data }: ListingContentProps) {
             {data.fields.title}
           </p>
         </div>
-        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6">
+        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6 lg:pl-8">
           {data.fields.items?.map((item) => {
             if ('price' in item.fields) {
               return <PricingItem key={item.sys.id} package={item as Package} textColorClass={textColorClass} />;

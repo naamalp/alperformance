@@ -21,6 +21,11 @@ interface PersonListingProps {
 interface PersonItem {
   sys: {
     id: string;
+    contentType: {
+      sys: {
+        id: string;
+      };
+    };
   };
   fields: {
     internalName: string;
@@ -56,56 +61,89 @@ const options = {
   },
 };
 
-const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass: string }) => (
-  <article className={`flex flex-col items-start ${item.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
-    <div className="relative w-full">
-      <div className="aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
-        {item.fields.image?.fields?.file?.url && (
-          <Image
-            src={`https:${item.fields.image.fields.file.url}`}
-            alt={`${item.fields.firstName} ${item.fields.lastName}`}
-            width={item.fields.image.fields.file.details.image.width}
-            height={item.fields.image.fields.file.details.image.height}
-            className="h-full w-full object-cover m-0"
-            priority
-          />
-        )}
-      </div>
-      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-    </div>
-    <div className="max-w-xl">
-      <div className="mt-8 flex items-center gap-x-4 text-xs">
-        <time dateTime="2020-03-16" className="text-gray-500">
-          {item.fields.role}
-        </time>
-      </div>
-      <div className="group relative">
-        <h3 className={`mt-3 text-lg font-semibold leading-6 ${textColorClass} group-hover:text-gray-600`}>
-          <span className="absolute inset-0" />
-          {item.fields.firstName} {item.fields.lastName}
-        </h3>
-        <div className="mt-5 text-sm leading-6 text-gray-600">
-          {item.fields.bio && documentToReactComponents(item.fields.bio, options)}
+const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass: string }) => {
+  console.log('PersonCard rendering item:', {
+    id: item.sys.id,
+    name: `${item.fields.firstName} ${item.fields.lastName}`,
+    image: {
+      exists: !!item.fields.image,
+      type: item.fields.image ? typeof item.fields.image : 'none',
+      hasFields: item.fields.image?.fields ? 'yes' : 'no',
+      hasFile: item.fields.image?.fields?.file ? 'yes' : 'no',
+      hasUrl: item.fields.image?.fields?.file?.url ? 'yes' : 'no',
+      url: item.fields.image?.fields?.file?.url,
+      fullImage: item.fields.image
+    }
+  });
+
+  return (
+    <article className={`flex flex-col items-start ${item.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
+      <div className="relative w-full">
+        <div className="aspect-square w-full overflow-hidden rounded-2xl bg-gray-100">
+          {item.fields.image?.fields?.file?.url && (
+            <Image
+              src={`https:${item.fields.image.fields.file.url}`}
+              alt={`${item.fields.firstName} ${item.fields.lastName}`}
+              width={item.fields.image.fields.file.details.image.width}
+              height={item.fields.image.fields.file.details.image.height}
+              className="h-full w-full object-cover m-0"
+              priority
+            />
+          )}
         </div>
-        {item.fields.linkedIn && (
-          <div className="mt-6 flex gap-6 relative z-10">
-            <a 
-              href={item.fields.linkedIn} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-gray-500 transition-colors duration-200"
-            >
-              <span className="sr-only">LinkedIn</span>
-              <FontAwesomeIcon icon={faLinkedin} size="2x" />
-            </a>
-          </div>
-        )}
+        <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
       </div>
-    </div>
-  </article>
-);
+      <div className="max-w-xl">
+        <div className="mt-8 flex items-center gap-x-4 text-xs">
+          <time dateTime="2020-03-16" className="text-gray-500">
+            {item.fields.role}
+          </time>
+        </div>
+        <div className="group relative">
+          <h3 className={`mt-3 text-lg font-semibold leading-6 ${textColorClass} group-hover:text-gray-600`}>
+            <span className="absolute inset-0" />
+            {item.fields.firstName} {item.fields.lastName}
+          </h3>
+          <div className="mt-5 text-sm leading-6 text-gray-600">
+            {item.fields.bio && documentToReactComponents(item.fields.bio, options)}
+          </div>
+          {item.fields.linkedIn && (
+            <div className="mt-6 flex gap-6 relative z-10">
+              <a 
+                href={item.fields.linkedIn} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-400 hover:text-gray-500 transition-colors duration-200"
+              >
+                <span className="sr-only">LinkedIn</span>
+                <FontAwesomeIcon icon={faLinkedin} size="2x" />
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
 
 export default function PersonListing({ data }: PersonListingProps) {
+  console.log('PersonListing: Rendering with data:', {
+    title: data.fields.title,
+    itemsCount: data.fields.items?.length,
+    firstItem: data.fields.items?.[0] ? {
+      id: data.fields.items[0].sys.id,
+      name: `${data.fields.items[0].fields.firstName} ${data.fields.items[0].fields.lastName}`,
+      image: {
+        exists: !!data.fields.items[0].fields.image,
+        type: data.fields.items[0].fields.image ? typeof data.fields.items[0].fields.image : 'none',
+        hasFields: data.fields.items[0].fields.image?.fields ? 'yes' : 'no',
+        hasFile: data.fields.items[0].fields.image?.fields?.file ? 'yes' : 'no',
+        hasUrl: data.fields.items[0].fields.image?.fields?.file?.url ? 'yes' : 'no',
+        url: data.fields.items[0].fields.image?.fields?.file?.url
+      }
+    } : null
+  });
+
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
 

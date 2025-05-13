@@ -49,17 +49,17 @@ export async function generateMetadata() {
     'fields.slug': '/',
     include: 3,
   };
-  const pageResponse = await client.getEntries<PageEntry>(pageQuery);
+  const pageResponse = await client.delivery.getEntries<PageEntry>(pageQuery);
   
   // Get the logo asset
-  const logoAsset = await client.getAsset('5wsadgwpKdFVVPahhdvCCM');
+  const logoAsset = await client.delivery.getAsset('5wsadgwpKdFVVPahhdvCCM');
   const logoUrl = logoAsset?.fields?.file?.url ? `https:${logoAsset.fields.file.url}` : undefined;
   const logoWidth = logoAsset?.fields?.file?.details?.image?.width;
   const logoHeight = logoAsset?.fields?.file?.details?.image?.height;
   const logoAlt = logoAsset?.fields?.description || 'Company Logo';
   
   try {
-    const defaultImage = await client.getAsset('5cjlYuhGlw5DI48lLsYEL3');
+    const defaultImage = await client.delivery.getAsset('5cjlYuhGlw5DI48lLsYEL3');
     const imageUrl = defaultImage?.fields?.file?.url ? `https:${defaultImage.fields.file.url}` : undefined;
     const imageWidth = defaultImage?.fields?.file?.details?.image?.width;
     const imageHeight = defaultImage?.fields?.file?.details?.image?.height;
@@ -159,7 +159,7 @@ export default async function Home() {
     include: 10,
   };
   console.log('Contentful query:', query);
-  const response = await client.getEntries<PageEntry>(query);
+  const response = await client.delivery.getEntries<PageEntry>(query);
   console.log('Contentful response:', {
     total: response.total,
     items: response.items.length,

@@ -66,6 +66,12 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
+  console.log('Testimonials data:', activeTestimonials.map(t => ({
+    id: t.sys.id,
+    name: t.fields.name,
+    imageUrl: t.fields.personImage?.fields?.file?.url
+  })));
+
   const toggleExpand = (id: string) => {
     setExpandedTestimonials(prev => ({
       ...prev,
@@ -101,7 +107,7 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
   };
 
   return (
-    <div className="mt-16">
+    <div className="mt-16 mx-auto max-w-7xl pl-6 pr-0 lg:px-8">
       <div 
         ref={carouselRef}
         onScroll={handleScroll}
@@ -110,9 +116,9 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
         {activeTestimonials.map((testimonial) => (
           <div
             key={testimonial.sys.id}
-            className="relative flex flex-col items-start w-72 shrink-0 snap-start scroll-ml-[--scroll-padding] overflow-hidden rounded-3xl sm:w-96"
+            className="relative flex flex-col items-start w-[calc(33.333%-1.5rem)] min-w-[300px] shrink-0 snap-start scroll-ml-[--scroll-padding] overflow-hidden rounded-3xl"
           >
-            {testimonial.fields.personImage && (
+            {testimonial.fields.personImage?.fields?.file?.url && (
               <div className="relative h-[400px] w-[400px] mx-auto bg-gray-900">
                 <Image
                   src={`https:${testimonial.fields.personImage.fields.file.url}`}
@@ -192,4 +198,4 @@ export default function TestimonialCarousel({ testimonials }: TestimonialCarouse
       </div>
     </div>
   );
-} 
+}

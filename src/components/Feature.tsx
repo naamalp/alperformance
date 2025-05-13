@@ -123,25 +123,12 @@ const getImageStyleClass = (hasStyle?: boolean) => {
   return 'w-full rounded-xl shadow-2xl ring-1 ring-gray-400/10 object-cover';
 };
 
-export default function Feature({ data }: FeatureProps) {
-  console.log('Feature component received data:', {
-    title: data.fields.title,
-    hasCTA: !!data.fields.cta,
-    cta: data.fields.cta,
-    mediaStyle: data.fields.mediaStyle,
-    mediaSize: data.fields.mediaSize,
-    mediaStyleType: typeof data.fields.mediaStyle
-  });
-  
+export default function Feature({ data }: FeatureProps) {  
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-transparent';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
  
 
   const renderContent = () => {
-    console.log('Rendering feature content with CTA:', {
-      hasCTA: !!data.fields.cta,
-      cta: data.fields.cta
-    });
 
     return (
       <div className="lg:max-w-lg">

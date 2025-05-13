@@ -63,7 +63,7 @@ async function getTestimonials() {
       order: 'fields.name'
     };
 
-    const response = await client.getEntries(query);
+    const response = await client.delivery.getEntries(query);
     return response.items as unknown as TestimonialContentType[];
   } catch (error) {
     console.error('Error fetching testimonials:', error);
