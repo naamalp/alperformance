@@ -50,20 +50,7 @@ interface PersonItem {
     featured?: boolean;
     linkedIn?: string;
     bio: any;
-    image?: {
-      fields: {
-        file: {
-          url: string;
-          contentType: string;
-          details: {
-            image: {
-              width: number;
-              height: number;
-            };
-          };
-        };
-      };
-    };
+    image?: any;
   };
 }
 
@@ -240,6 +227,7 @@ const PricingItem = ({ package: pkg, textColorClass }: { package: Package; textC
   );
 };
 
+// Helper function to check if an item is a person
 function isPersonItem(item: any): item is PersonItem {
   return (
     item?.fields?.firstName !== undefined &&
@@ -255,22 +243,21 @@ export default function ListingContent({ data }: ListingContentProps) {
   // If all items are persons, render the PersonListing component
   if (allItemsArePersons) {
     const personItems = data.fields.items.filter(isPersonItem);
-    console.log('Transforming person items:', {
-      items: personItems.map(item => ({
-        id: item.sys.id,
-        name: `${item.fields.firstName} ${item.fields.lastName}`,
-        image: {
-          exists: !!item.fields.image,
-          type: item.fields.image ? typeof item.fields.image : 'none',
-          hasFields: item.fields.image?.fields ? 'yes' : 'no',
-          hasFile: item.fields.image?.fields?.file ? 'yes' : 'no',
-          hasUrl: item.fields.image?.fields?.file?.url ? 'yes' : 'no',
-          url: item.fields.image?.fields?.file?.url,
-          fullImage: item.fields.image
-        }
-      }))
-    });
-
+    // Add a new function to try different ways of getting the image
+    const transformPersonImage = (image: any) => {
+      // Case 1: image is an object with fields.file
+      if (image?.fields?.file) {
+        return {
+          fields: {
+            file: image.fields.file
+          }
+        };
+      }
+      
+      // Default: can't handle this case
+      return undefined;
+    };
+    
     const personData = {
       ...data,
       fields: {
@@ -279,15 +266,12 @@ export default function ListingContent({ data }: ListingContentProps) {
           ...item,
           fields: {
             ...item.fields,
-            image: item.fields.image?.fields?.file ? {
-              fields: {
-                file: item.fields.image.fields.file
-              }
-            } : undefined
+            image: item.fields.image ? transformPersonImage(item.fields.image) : undefined
           }
         }))
       }
     };
+    
     return <PersonListing data={personData} />;
   }
 

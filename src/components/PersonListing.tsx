@@ -62,20 +62,6 @@ const options = {
 };
 
 const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass: string }) => {
-  console.log('PersonCard rendering item:', {
-    id: item.sys.id,
-    name: `${item.fields.firstName} ${item.fields.lastName}`,
-    image: {
-      exists: !!item.fields.image,
-      type: item.fields.image ? typeof item.fields.image : 'none',
-      hasFields: item.fields.image?.fields ? 'yes' : 'no',
-      hasFile: item.fields.image?.fields?.file ? 'yes' : 'no',
-      hasUrl: item.fields.image?.fields?.file?.url ? 'yes' : 'no',
-      url: item.fields.image?.fields?.file?.url,
-      fullImage: item.fields.image
-    }
-  });
-
   return (
     <article className={`flex flex-col items-start ${item.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
       <div className="relative w-full">
@@ -127,23 +113,6 @@ const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass
 };
 
 export default function PersonListing({ data }: PersonListingProps) {
-  console.log('PersonListing: Rendering with data:', {
-    title: data.fields.title,
-    itemsCount: data.fields.items?.length,
-    firstItem: data.fields.items?.[0] ? {
-      id: data.fields.items[0].sys.id,
-      name: `${data.fields.items[0].fields.firstName} ${data.fields.items[0].fields.lastName}`,
-      image: {
-        exists: !!data.fields.items[0].fields.image,
-        type: data.fields.items[0].fields.image ? typeof data.fields.items[0].fields.image : 'none',
-        hasFields: data.fields.items[0].fields.image?.fields ? 'yes' : 'no',
-        hasFile: data.fields.items[0].fields.image?.fields?.file ? 'yes' : 'no',
-        hasUrl: data.fields.items[0].fields.image?.fields?.file?.url ? 'yes' : 'no',
-        url: data.fields.items[0].fields.image?.fields?.file?.url
-      }
-    } : null
-  });
-
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
   const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
 

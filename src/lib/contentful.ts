@@ -236,77 +236,28 @@ function transformAssetFile(file: any): AssetFile {
 // Helper function to resolve image asset
 async function resolveImageAsset(imageField: any, includes: any, client: any): Promise<ContentfulAsset | null> {
   if (!imageField || !imageField.sys) {
-    console.log('Invalid image field:', {
-      hasField: !!imageField,
-      hasSys: !!imageField?.sys,
-      fieldType: typeof imageField,
-      fieldKeys: imageField ? Object.keys(imageField) : []
-    });
     return null;
   }
 
   try {
     const assetId = imageField.sys.id;
     
-    // Log detailed information about includes
-    console.log('Resolving image asset:', {
-      assetId,
-      hasIncludes: !!includes,
-      assetCount: includes?.Asset?.length || 0,
-      includesKeys: includes ? Object.keys(includes) : [],
-      assetIds: includes?.Asset?.map((a: any) => ({
-        id: a.sys.id,
-        type: a.sys.type,
-        contentType: a.sys.contentType?.sys?.id,
-        hasFields: !!a.fields,
-        hasFile: !!a.fields?.file
-      })) || []
-    });
-
     // First try to find the asset in includes
     const asset = includes?.Asset?.find((a: ContentfulAsset) => a.sys.id === assetId);
     if (asset && isAsset(asset)) {
-      console.log('Found asset in includes:', {
-        id: assetId,
-        hasFields: !!asset.fields,
-        hasFile: !!asset.fields?.file,
-        fileKeys: asset.fields?.file ? Object.keys(asset.fields.file) : [],
-        url: getAssetUrl(asset),
-        assetType: typeof asset,
-        assetKeys: Object.keys(asset)
-      });
       return asset;
     }
 
     // If not found in includes, try to fetch it
-    console.log('Asset not found in includes, attempting to fetch:', {
-      assetId,
-      hasManagementClient: !!client.management,
-      hasDeliveryClient: !!client.delivery,
-      availableAssetIds: includes?.Asset?.map((a: any) => a.sys.id) || []
-    });
-
     try {
       // Try to fetch the asset directly first
       try {
         const directAsset = await client.delivery.getAsset(assetId);
         if (directAsset) {
-          console.log('Successfully fetched asset directly:', {
-            id: assetId,
-            hasFields: !!directAsset.fields,
-            hasFile: !!directAsset.fields?.file,
-            fileKeys: directAsset.fields?.file ? Object.keys(directAsset.fields.file) : [],
-            url: directAsset.fields?.file?.url,
-            assetType: typeof directAsset,
-            assetKeys: Object.keys(directAsset)
-          });
           return convertManagementAssetToDelivery(directAsset);
         }
       } catch (directError) {
-        console.log('Direct asset fetch failed, trying alternative methods:', {
-          assetId,
-          error: directError instanceof Error ? directError.message : String(directError)
-        });
+        // Continue to alternative methods
       }
 
       if (client.management) {
@@ -315,23 +266,9 @@ async function resolveImageAsset(imageField: any, includes: any, client: any): P
           const environment = await space.getEnvironment('master');
           const asset = await environment.getAsset(assetId);
           const publishedAsset = await asset.publish();
-          
-          console.log('Successfully fetched asset via Management API:', {
-            id: assetId,
-            hasFields: !!publishedAsset.fields,
-            hasFile: !!publishedAsset.fields?.file,
-            fileKeys: publishedAsset.fields?.file ? Object.keys(publishedAsset.fields.file) : [],
-            url: publishedAsset.fields?.file?.url,
-            assetType: typeof publishedAsset,
-            assetKeys: Object.keys(publishedAsset)
-          });
-          
           return convertManagementAssetToDelivery(publishedAsset);
         } catch (managementError) {
-          console.error('Management API fetch failed:', {
-            assetId,
-            error: managementError instanceof Error ? managementError.message : String(managementError)
-          });
+          // Continue to next method
         }
       }
 
@@ -342,64 +279,15 @@ async function resolveImageAsset(imageField: any, includes: any, client: any): P
         include: 0
       });
 
-      console.log('Delivery API response:', {
-        hasItems: !!assetResponse.items,
-        itemsLength: assetResponse.items?.length,
-        firstItem: assetResponse.items?.[0] ? {
-          hasSys: !!assetResponse.items[0].sys,
-          hasFields: !!assetResponse.items[0].fields,
-          hasFile: !!assetResponse.items[0].fields?.file,
-          fileKeys: assetResponse.items[0].fields?.file ? Object.keys(assetResponse.items[0].fields.file) : [],
-          itemType: typeof assetResponse.items[0],
-          itemKeys: Object.keys(assetResponse.items[0])
-        } : null,
-        responseType: typeof assetResponse,
-        responseKeys: Object.keys(assetResponse)
-      });
-
       if (assetResponse.items && assetResponse.items.length > 0) {
         const fetchedAsset = assetResponse.items[0];
         if (isAsset(fetchedAsset)) {
-          console.log('Successfully fetched asset via Delivery API:', {
-            id: assetId,
-            hasFields: !!fetchedAsset.fields,
-            hasFile: !!fetchedAsset.fields?.file,
-            fileKeys: fetchedAsset.fields?.file ? Object.keys(fetchedAsset.fields.file) : [],
-            url: getAssetUrl(fetchedAsset),
-            assetType: typeof fetchedAsset,
-            assetKeys: Object.keys(fetchedAsset)
-          });
           return convertManagementAssetToDelivery(fetchedAsset);
-        } else {
-          console.log('Fetched item is not a valid asset:', {
-            id: assetId,
-            type: fetchedAsset.sys?.type,
-            hasFields: !!fetchedAsset.fields,
-            hasFile: !!fetchedAsset.fields?.file
-          });
         }
-      } else {
-        console.log('No items found in Delivery API response for asset:', {
-          assetId,
-          responseType: typeof assetResponse,
-          responseKeys: Object.keys(assetResponse),
-          availableAssetIds: includes?.Asset?.map((a: any) => a.sys.id) || []
-        });
       }
     } catch (error) {
-      console.error('Error fetching asset:', {
-        assetId,
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        availableAssetIds: includes?.Asset?.map((a: any) => a.sys.id) || []
-      });
     }
   } catch (error) {
-    console.error('Error resolving image asset:', {
-      error: error instanceof Error ? error.message : String(error),
-      imageField,
-      stack: error instanceof Error ? error.stack : undefined
-    });
   }
 
   return null;
@@ -416,9 +304,9 @@ export function getContentfulClient() {
 
   return {
     delivery: createClient({
-      space: spaceId,
-      accessToken: accessToken,
-      environment: 'master',
+    space: spaceId,
+    accessToken: accessToken,
+    environment: 'master',
     }),
     management: managementToken ? createManagementClient({
       accessToken: managementToken,
@@ -438,13 +326,6 @@ export async function getEntries<T = any>(
   } = {}
 ): Promise<T[]> {
   const client = getContentfulClient();
-  
-  console.log('Fetching entries:', {
-    contentType,
-    options,
-    hasDeliveryClient: !!client.delivery,
-    hasManagementClient: !!client.management
-  });
 
   try {
     const query = {
@@ -452,74 +333,25 @@ export async function getEntries<T = any>(
       limit: options.limit || 100,
       skip: options.skip || 0,
       order: options.order,
-      include: options.include || 2,
+      include: options.include || 4,
       select: options.select?.join(','),
       ...options.where
     };
 
-    console.log('Query:', {
-      contentType,
-      query,
-      hasDeliveryClient: !!client.delivery,
-      hasManagementClient: !!client.management
-    });
-
     const response = await client.delivery.getEntries(query);
-    console.log('Response:', {
-      hasItems: !!response.items,
-      itemsLength: response.items?.length,
-      firstItem: response.items?.[0] ? {
-        id: response.items[0].sys.id,
-        contentType: response.items[0].sys.contentType?.sys?.id,
-        hasFields: !!response.items[0].fields,
-        fieldKeys: response.items[0].fields ? Object.keys(response.items[0].fields) : [],
-        hasImage: !!response.items[0].fields?.image,
-        imageType: response.items[0].fields?.image ? typeof response.items[0].fields.image : null
-      } : null
-    });
 
     // Process entries to resolve linked images
     const processedEntries = await Promise.all(
       response.items.map(async (item: any) => {
         const processedItem = { ...item };
-        
-        // Log the item being processed
-        console.log('Processing item:', {
-          id: item.sys.id,
-          contentType: item.sys.contentType?.sys?.id,
-          hasFields: !!item.fields,
-          fieldKeys: item.fields ? Object.keys(item.fields) : [],
-          hasImage: !!item.fields?.image,
-          imageType: item.fields?.image ? typeof item.fields.image : null
-        });
 
         // Check if the item has an image field
         if (item.fields?.image) {
-          console.log('Found image field:', {
-            id: item.sys.id,
-            imageField: item.fields.image,
-            hasSys: !!item.fields.image.sys,
-            sysId: item.fields.image.sys?.id,
-            sysType: item.fields.image.sys?.type
-          });
-
           // Resolve the image asset
           const resolvedAsset = await resolveImageAsset(item.fields.image, response.includes, client);
           
           if (resolvedAsset) {
-            console.log('Successfully resolved image:', {
-              id: item.sys.id,
-              hasFields: !!resolvedAsset.fields,
-              hasFile: !!resolvedAsset.fields?.file,
-              fileKeys: resolvedAsset.fields?.file ? Object.keys(resolvedAsset.fields?.file) : [],
-              url: resolvedAsset.fields?.file?.url
-            });
             processedItem.fields.image = resolvedAsset as any;
-          } else {
-            console.log('Failed to resolve image:', {
-              id: item.sys.id,
-              imageField: item.fields.image
-            });
           }
         }
 
@@ -529,11 +361,7 @@ export async function getEntries<T = any>(
 
     return processedEntries as T[];
   } catch (error) {
-    console.error('Error fetching entries:', {
-      contentType,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error('Error fetching entries:', error);
     throw error;
   }
 }
@@ -555,15 +383,44 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
   try {
     const client = getContentfulClient();
     
+    // Check if a person entry has an image field by querying directly
+    try {
+      const personQuery = {
+        content_type: 'person',
+        limit: 1,
+        include: 10 // Maximum include depth to ensure we get everything
+      };
+      
+      const personResponse = await client.delivery.getEntries(personQuery);
+      
+      if (personResponse.items && personResponse.items.length > 0) {
+        const person = personResponse.items[0];
+        // Check if image field exists in the content type definition
+        try {
+          const contentTypeResponse = await client.delivery.getContentType('person');
+          const imageField = contentTypeResponse.fields.find(field => field.id === 'image');
+        } catch (typeError) {
+          console.error('[getPageBySlug] Error fetching content type:', typeError);
+        }
+        
+        // If includes exist, check if they contain the referenced image
+        if (personResponse.includes?.Asset?.length) {
+          // If person has image field with an ID, check if it's in the includes
+          if (person.fields?.image?.sys?.id) {
+            const imageId = person.fields.image.sys.id;
+            const foundAsset = personResponse.includes.Asset.find(asset => asset.sys.id === imageId);
+          }
+        }
+      } else {
+        console.log('[getPageBySlug] No person entries found in direct query');
+      }
+    } catch (error) {
+      console.error('[getPageBySlug] Error checking person model:', error);
+    }
+    
     // Split the slug into parts and clean them
     const slugParts = slug.split('/').filter(Boolean);
     const lastPart = slugParts[slugParts.length - 1];
-    
-    console.log('Fetching page with slug:', {
-      fullSlug: slug,
-      lastPart,
-      allParts: slugParts
-    });
     
     // Try to find the page with the exact slug
     let response;
@@ -572,156 +429,96 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
       const query = {
         content_type: 'page',
         'fields.slug': slug,
-        include: 3, // Include up to 3 levels of linked entries
-        select: ['sys.id', 'fields', 'sys.contentType'] // Added sys.contentType to selection
+        include: 5, // Increased from 3 to 5 to include deeper nested assets like person images
+        select: ['sys.id', 'fields', 'sys.contentType']
       };
-
-      console.log('Fetching page with query:', query);
       
       try {
         response = await client.delivery.getEntries(query);
-        console.log('Initial response:', {
-          hasItems: !!response.items,
-          itemsLength: response.items?.length,
-          firstItem: response.items?.[0] ? {
-            hasSys: !!response.items[0].sys,
-            hasContentType: !!response.items[0].sys?.contentType,
-            contentTypeId: response.items[0].sys?.contentType?.sys?.id,
-            hasFields: !!response.items[0].fields,
-            fields: response.items[0].fields ? Object.keys(response.items[0].fields) : []
-          } : null
-        });
+        
+        // Log information about included assets
+        if (response.includes && response.includes.Asset) {
+          console.log('[getPageBySlug] Included assets:', {
+            total: response.includes.Asset.length,
+            assetIds: response.includes.Asset.map(asset => asset.sys.id),
+            firstAsset: response.includes.Asset[0] ? {
+              id: response.includes.Asset[0].sys.id,
+              hasFields: !!response.includes.Asset[0].fields,
+              hasFile: !!response.includes.Asset[0].fields?.file,
+              fileLocales: response.includes.Asset[0].fields?.file ? Object.keys(response.includes.Asset[0].fields.file) : []
+            } : 'no assets'
+          });
+        } else {
+          console.log('[getPageBySlug] No assets included in response');
+        }
       } catch (apiError) {
-        console.error('Contentful API error:', {
-          error: apiError instanceof Error ? apiError.message : String(apiError),
-          query
-        });
+        console.error('Contentful API error:', apiError);
         throw apiError;
       }
 
       // If no page found with full slug, try with just the last part
       if (!response.items || response.items.length === 0) {
-        console.log('No page found with full slug, trying last part');
         const lastPartQuery = {
           content_type: 'page',
           'fields.slug': lastPart,
-          include: 3,
+          include: 5, // Increased from 3 to 5
           select: ['sys.id', 'fields', 'sys.contentType']
         };
-
-        console.log('Fetching page with query:', lastPartQuery);
         
         try {
           response = await client.delivery.getEntries(lastPartQuery);
-          console.log('Last part response:', {
-            hasItems: !!response.items,
-            itemsLength: response.items?.length,
-            firstItem: response.items?.[0] ? {
-              hasSys: !!response.items[0].sys,
-              hasContentType: !!response.items[0].sys?.contentType,
-              contentTypeId: response.items[0].sys?.contentType?.sys?.id,
-              hasFields: !!response.items[0].fields,
-              fields: response.items[0].fields ? Object.keys(response.items[0].fields) : []
-            } : null
-          });
         } catch (apiError) {
-          console.error('Contentful API error:', {
-            error: apiError instanceof Error ? apiError.message : String(apiError),
-            query: lastPartQuery
-          });
+          console.error('Contentful API error:', apiError);
           throw apiError;
         }
       }
     } catch (error) {
-      console.error('Error fetching page:', {
-        error: error instanceof Error ? error.message : String(error),
-        slug,
-        lastPart
-      });
+      console.error('Error fetching page:', error);
       throw error;
     }
 
     // If no page found, try to find a service
     if (!response.items || response.items.length === 0) {
-      console.log('No page found, trying service');
       try {
         // First try to find the service with the full slug
         const serviceQuery = {
           content_type: 'service',
           'fields.slug': slug,
-          include: 3,
+          include: 5, // Increased from 3 to 5
           select: ['sys.id', 'fields', 'sys.contentType']
         };
-
-        console.log('Fetching service with query:', serviceQuery);
         
         try {
           response = await client.delivery.getEntries(serviceQuery);
-          console.log('Service response:', {
-            hasItems: !!response.items,
-            itemsLength: response.items?.length,
-            firstItem: response.items?.[0] ? {
-              hasSys: !!response.items[0].sys,
-              hasContentType: !!response.items[0].sys?.contentType,
-              contentTypeId: response.items[0].sys?.contentType?.sys?.id,
-              hasFields: !!response.items[0].fields,
-              fields: response.items[0].fields ? Object.keys(response.items[0].fields) : []
-            } : null
-          });
         } catch (apiError) {
-          console.error('Contentful API error:', {
-            error: apiError instanceof Error ? apiError.message : String(apiError),
-            query: serviceQuery
-          });
+          console.error('Contentful API error:', apiError);
           throw apiError;
         }
 
         // If no service found with full slug, try with just the last part
         if (!response.items || response.items.length === 0) {
-          console.log('No service found with full slug, trying last part');
           const lastPartServiceQuery = {
             content_type: 'service',
             'fields.slug': lastPart,
-            include: 3,
+            include: 5, // Increased from 3 to 5
             select: ['sys.id', 'fields', 'sys.contentType']
           };
-
-          console.log('Fetching service with query:', lastPartServiceQuery);
           
           try {
             response = await client.delivery.getEntries(lastPartServiceQuery);
-            console.log('Last part service response:', {
-              hasItems: !!response.items,
-              itemsLength: response.items?.length,
-              firstItem: response.items?.[0] ? {
-                hasSys: !!response.items[0].sys,
-                hasContentType: !!response.items[0].sys?.contentType,
-                contentTypeId: response.items[0].sys?.contentType?.sys?.id,
-                hasFields: !!response.items[0].fields,
-                fields: response.items[0].fields ? Object.keys(response.items[0].fields) : []
-              } : null
-            });
           } catch (apiError) {
-            console.error('Contentful API error:', {
-              error: apiError instanceof Error ? apiError.message : String(apiError),
-              query: lastPartServiceQuery
-            });
+            console.error('Contentful API error:', apiError);
             throw apiError;
           }
         }
       } catch (error) {
-        console.error('Error fetching service:', {
-          error: error instanceof Error ? error.message : String(error),
-          slug,
-          lastPart
-        });
+        console.error('Error fetching service:', error);
         throw error;
       }
     }
 
     // If no content found at all, return null
     if (!response.items || response.items.length === 0) {
-      console.log('No content found for slug:', slug);
       return null;
     }
 
@@ -730,10 +527,7 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
     const contentType = await resolveContentType(content, response.includes, client);
     
     if (!contentType) {
-      console.error('Could not determine content type:', {
-        contentSys: content.sys,
-        includes: response.includes
-      });
+      console.error('Could not determine content type');
       return null;
     }
 
@@ -755,10 +549,6 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
                 if (resolvedAsset) {
                   listItem.fields.image = resolvedAsset;
                 } else {
-                  console.log('Could not resolve image for item:', {
-                    itemId: listItem.sys.id,
-                    imageField: listItem.fields.image
-                  });
                   delete listItem.fields.image;
                 }
               }
@@ -775,30 +565,14 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
         if (resolvedAsset) {
           content.fields.heroImage = resolvedAsset;
         } else {
-          console.log('Could not resolve hero image:', {
-            contentId: content.sys.id,
-            imageField: content.fields.heroImage
-          });
           delete content.fields.heroImage;
         }
       }
     }
 
-    console.log('Found content:', {
-      contentType,
-      id: content.sys.id,
-      fields: Object.keys(content.fields),
-      hasHeroImage: !!content.fields.heroImage,
-      hasBody: !!content.fields.body,
-      bodyLength: Array.isArray(content.fields.body) ? content.fields.body.length : 0
-    });
-
     return content as unknown as PageContentType | ServiceContentType;
   } catch (error) {
-    console.error('Error in getPageBySlug:', {
-      error: error instanceof Error ? error.message : String(error),
-      slug
-    });
+    console.error('Error in getPageBySlug:', error);
     return null;
   }
 }
@@ -812,17 +586,8 @@ export async function getServices() {
       select: ['sys.id', 'fields', 'sys.contentType']
     };
 
-    console.log('Fetching services with query:', query);
     const response = await client.delivery.getEntries(query);
     const services = response as unknown as ContentfulResponse;
-    
-    console.log('Services response:', {
-      total: services.items.length,
-      includes: {
-        Asset: services.includes?.Asset?.length || 0,
-        Entry: services.includes?.Entry?.length || 0
-      }
-    });
 
     // Process the services to resolve image assets
     const processedServices = await Promise.all(services.items.map(async service => {
@@ -831,10 +596,6 @@ export async function getServices() {
         if (resolvedAsset) {
           service.fields.image = resolvedAsset;
         } else {
-          console.log('Could not resolve image for service:', {
-            serviceId: service.sys.id,
-            imageField: service.fields.image
-          });
           delete service.fields.image;
         }
       }
@@ -843,10 +604,7 @@ export async function getServices() {
 
     return processedServices;
   } catch (error) {
-    console.error('Error fetching services:', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    console.error('Error fetching services:', error);
     throw error;
   }
 }
