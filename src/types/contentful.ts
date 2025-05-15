@@ -89,7 +89,8 @@ export interface ListingDynamicFields {
   subTitle?: string;
   limit?: number;
   pagination?: boolean;
-  listingContent: 'Services' | 'Articles' | 'Testimonials' | 'Packages';
+  listingContent: 'Services' | 'Articles' | 'Testimonials' | 'Packages' | 'Partners' | 'Partner';
+  background?: 'Light' | 'Dark';
 }
 
 export interface ListingDynamicContentType {

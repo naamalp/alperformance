@@ -4,6 +4,7 @@ import { ListingDynamicContentType } from '@/types/contentful';
 import { useEffect, useState } from 'react';
 import ServicesListing from './listings/ServicesListing';
 import TestimonialsListing from './listings/TestimonialsListing';
+import PartnersListing from './listings/PartnersListing';
 import ListingContent from './ListingContent';
 import { getContentfulClient } from '@/lib/contentful';
 
@@ -100,6 +101,8 @@ export default function ListingDynamic({ data }: ListingDynamicProps) {
         <TestimonialsListing data={data} />
       ) : data.fields.listingContent === 'Services' ? (
         <ServicesListing data={data} />
+      ) : data.fields.listingContent === 'Partners' || data.fields.listingContent === 'Partner' ? (
+        <PartnersListing data={data} />
       ) : data.fields.listingContent === 'Packages' ? (
         <ListingContent data={{
           fields: {

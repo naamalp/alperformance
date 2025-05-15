@@ -13,6 +13,7 @@ import TestimonialList from './TestimonialList';
 import { getContentfulClient } from '@/lib/contentful';
 import { useEffect, useState } from 'react';
 import PersonListing from './PersonListing';
+import PartnersCarousel from './PartnersCarousel';
 import parse from 'html-react-parser';
 
 // Add all solid icons to the library
@@ -24,9 +25,9 @@ interface ListingContentProps {
       internalName: string;
       title: string;
       subTitle?: string;
-      items: Array<CardItem | Package | PersonItem>;
+      items: Array<CardItem | Package | PersonItem | Partner>;
       background?: 'Light' | 'Dark';
-      style: 'Card' | 'Pricing' | 'Testimonial';
+      style: 'Card' | 'Pricing' | 'Testimonial' | 'Partner';
       contentTypeId: string;
     };
   };
@@ -51,6 +52,36 @@ interface PersonItem {
     linkedIn?: string;
     bio: any;
     image?: any;
+  };
+}
+
+interface Partner {
+  sys: {
+    id: string;
+    contentType: {
+      sys: {
+        id: string;
+      };
+    };
+  };
+  fields: {
+    internalName: string;
+    name: string;
+    logo: {
+      fields: {
+        file: {
+          url: string;
+          contentType: string;
+          details: {
+            image: {
+              width: number;
+              height: number;
+            };
+          };
+        };
+      };
+    };
+    website?: string;
   };
 }
 
@@ -236,6 +267,14 @@ function isPersonItem(item: any): item is PersonItem {
   );
 }
 
+// Helper function to check if an item is a partner
+function isPartnerItem(item: any): item is Partner {
+  return (
+    item?.fields?.name !== undefined &&
+    item?.fields?.logo !== undefined
+  );
+}
+
 export default function ListingContent({ data }: ListingContentProps) {
   // Check if all items are person items
   const allItemsArePersons = data.fields.items?.every(isPersonItem);
@@ -273,6 +312,24 @@ export default function ListingContent({ data }: ListingContentProps) {
     };
     
     return <PersonListing data={personData} />;
+  }
+
+  // Check if this is a partners listing (either by style or by content type)
+  const isPartners = data.fields.style === 'Partner' || 
+    (data.fields.items && data.fields.items.length > 0 && 
+     'contentType' in data.fields.items[0].sys && 
+     data.fields.items[0].sys.contentType?.sys?.id === 'partner');
+  
+  if (isPartners) {
+    const partnerItems = data.fields.items.filter(isPartnerItem);
+    return (
+      <PartnersCarousel 
+        partners={partnerItems} 
+        title={data.fields.title} 
+        subTitle={data.fields.subTitle} 
+        background={data.fields.background}
+      />
+    );
   }
 
   // Check if this is a testimonials listing
