@@ -5,10 +5,11 @@ import RichText from '@/components/RichText';
 import Feature from '@/components/Feature';
 import ListingContent from '@/components/ListingContent';
 import ServiceLayout from '@/components/ServiceLayout';
+import ContactForm from '@/components/ContactForm';
 
 export function renderContent(content: PageContentType | ServiceContentType) {
   if ('body' in content.fields) {
-    const { body } = content.fields;
+    const { body, pageType } = content.fields;
 
     if (!body) {
       return null;
@@ -16,7 +17,7 @@ export function renderContent(content: PageContentType | ServiceContentType) {
 
     // Check if body is an array (page) or rich text object (service)
     if (Array.isArray(body)) {
-      return body.map((item) => {
+      const renderedContent = body.map((item) => {
         const contentType = item.sys.contentType?.sys?.id;
         console.log('Rendering body item:', {
           contentType,
@@ -43,6 +44,18 @@ export function renderContent(content: PageContentType | ServiceContentType) {
             return null;
         }
       });
+
+      // For Contact page type, add the ContactForm after the content
+      if (pageType === 'Contact') {
+        return (
+          <>
+            {renderedContent}
+            <ContactForm />
+          </>
+        );
+      }
+
+      return renderedContent;
     } else {
       // Handle rich text body for services
       const serviceContent = content as ServiceContentType;
