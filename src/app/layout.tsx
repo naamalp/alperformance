@@ -18,6 +18,28 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+// Add metadata configuration
+export const metadata: Metadata = {
+  icons: {
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/favicon/safari-pinned-tab.svg',
+        color: '#051D40'
+      },
+    ],
+  },
+  manifest: '/favicon/site.webmanifest',
+};
+
 async function getNavigationData() {
   const client = getContentfulClient();
   const response = await client.delivery.getEntry('76xMjdWQDx8Tf290hdvXrN', {
