@@ -131,7 +131,7 @@ export default function Feature({ data }: FeatureProps) {
   const renderContent = () => {
 
     return (
-      <div className="lg:max-w-lg">
+      <div>
         <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
           {data.fields.subTitle}
         </h2>
@@ -153,10 +153,12 @@ export default function Feature({ data }: FeatureProps) {
   return (
     <div className={`${backgroundClass} py-24 sm:py-32`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+        <div className={`mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none ${
+          data.fields.mediaSize === 'Small' ? 'lg:grid-cols-5' : 'lg:grid-cols-2'
+        }`}>
           {data.fields.alignment === 'Left' ? (
             <>
-              <div className="relative">
+              <div className={`relative ${data.fields.mediaSize === 'Small' ? 'lg:col-span-2' : ''}`}>
                 <div className={`relative ${getMediaSizeClass(data.fields.mediaSize)}`}>
                   {data.fields.media?.fields?.image?.fields?.file?.url && (
                     <div className={getMediaStyleClass(data.fields.mediaStyle)}>
@@ -169,16 +171,16 @@ export default function Feature({ data }: FeatureProps) {
                   )}
                 </div>
               </div>
-              <div className="lg:pl-8 lg:pt-4">
+              <div className={`${data.fields.mediaSize === 'Small' ? 'lg:col-span-3' : ''} lg:pl-8 lg:pt-4`}>
                 {renderContent()}
               </div>
             </>
           ) : (
             <>
-              <div className="lg:pr-8 lg:pt-4">
+              <div className={`${data.fields.mediaSize === 'Small' ? 'lg:col-span-3' : ''} lg:pr-8 lg:pt-4`}>
                 {renderContent()}
               </div>
-              <div className="relative">
+              <div className={`relative ${data.fields.mediaSize === 'Small' ? 'lg:col-span-2' : ''}`}>
                 <div className={`relative ${getMediaSizeClass(data.fields.mediaSize)}`}>
                   {data.fields.media?.fields?.image?.fields?.file?.url && (
                     <div className={getMediaStyleClass(data.fields.mediaStyle)}>

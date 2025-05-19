@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import PersonListing from './PersonListing';
 import PartnersCarousel from './PartnersCarousel';
 import parse from 'html-react-parser';
+import { generateSlugFromReference } from '@/lib/utils';
 
 // Add all solid icons to the library
 library.add(fas);
@@ -25,7 +26,7 @@ interface ListingContentProps {
       internalName: string;
       title: string;
       subTitle?: string;
-      items: Array<CardItem | Package | PersonItem | Partner>;
+      items: Array<CardItem | Package | PersonItem | Partner | PageItem>;
       background?: 'Light' | 'Dark';
       style: 'Card' | 'Pricing' | 'Testimonial' | 'Partner';
       contentTypeId: string;
@@ -130,6 +131,38 @@ interface Package {
   };
 }
 
+interface PageItem {
+  sys: {
+    id: string;
+    contentType: {
+      sys: {
+        id: string;
+      };
+    };
+  };
+  fields: {
+    internalName: string;
+    pageTitle: string;
+    subTitle?: string;
+    description?: any;
+    image?: {
+      fields: {
+        file: {
+          url: string;
+          contentType: string;
+          details: {
+            image: {
+              width: number;
+              height: number;
+            };
+          };
+        };
+      };
+    };
+    slug: string;
+  };
+}
+
 function isPackage(item: any): item is Package {
   return (
     item?.fields?.packageName !== undefined &&
@@ -144,6 +177,13 @@ function isCardItem(item: any): item is CardItem {
     item?.fields?.firstName !== undefined &&
     item?.fields?.lastName !== undefined &&
     item?.fields?.role !== undefined
+  );
+}
+
+function isPageItem(item: any): item is PageItem {
+  return (
+    item?.sys?.contentType?.sys?.id === 'page' &&
+    item?.fields?.slug !== undefined
   );
 }
 
@@ -275,6 +315,37 @@ function isPartnerItem(item: any): item is Partner {
   );
 }
 
+const PageCardComponent = ({ item, textColorClass }: { item: PageItem; textColorClass: string }) => (
+  <article className="flex flex-col items-start lg:col-span-2">
+    <div className="max-w-xl">
+      <div className="group relative">
+        <h3 className={`text-xl font-semibold leading-7 ${textColorClass} group-hover:text-gray-600`}>
+          <span className="absolute inset-0" />
+          {item.fields.pageTitle}
+        </h3>
+        {item.fields.subTitle && (
+          <p className="mt-2 text-base leading-7 text-gray-600">
+            {item.fields.subTitle}
+          </p>
+        )}
+        {item.fields.description && (
+          <div className="mt-4 text-sm leading-6 text-gray-600">
+            {documentToReactComponents(item.fields.description, options)}
+          </div>
+        )}
+      </div>
+      <div className="mt-6">
+        <a
+          href={`/${generateSlugFromReference(item)}`}
+          className="text-sm font-semibold leading-6 text-blue-600 hover:text-blue-500"
+        >
+          Learn more <FontAwesomeIcon icon={fas.faArrowRight} className="ml-1" />
+        </a>
+      </div>
+    </div>
+  </article>
+);
+
 export default function ListingContent({ data }: ListingContentProps) {
   // Check if all items are person items
   const allItemsArePersons = data.fields.items?.every(isPersonItem);
@@ -355,6 +426,33 @@ export default function ListingContent({ data }: ListingContentProps) {
       }
     }));
     return <TestimonialList testimonials={transformedTestimonials} style="carousel" />;
+  }
+
+  // Check if all items are pages
+  const allItemsArePages = data.fields.items?.every(isPageItem);
+  if (allItemsArePages) {
+    const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
+    const textColorClass = data.fields.background === 'Dark' ? 'text-white' : 'text-gray-900';
+
+    return (
+      <div className={`${backgroundClass} py-24 sm:py-32`}>
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className={`text-base font-semibold leading-7 ${data.fields.background === 'Dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+              {data.fields.subTitle}
+            </h2>
+            <p className={`mt-2 text-3xl font-bold tracking-tight ${textColorClass} sm:text-4xl`}>
+              {data.fields.title}
+            </p>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6 lg:pl-8">
+            {data.fields.items?.map((item) => (
+              <PageCardComponent key={item.sys.id} item={item as PageItem} textColorClass={textColorClass} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const backgroundClass = data.fields.background === 'Dark' ? 'bg-brand-primary-dark' : 'bg-white';
