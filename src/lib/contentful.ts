@@ -1,6 +1,6 @@
 import { createClient } from 'contentful';
 import { createClient as createManagementClient } from 'contentful-management';
-import { PageContentType, ServiceContentType } from '@/types/contentful';
+import { PageContentType, ServiceContentType } from '../types/contentful';
 import { Entry, Asset, AssetFile, AssetSys, EntrySys } from 'contentful';
 
 // Add type definitions for our custom types
@@ -205,14 +205,14 @@ function convertManagementAssetToDelivery(asset: any): ContentfulAsset {
       title: processedTitle,
       file: transformedFile
     }
-  } as Asset;
+  } as ContentfulAsset;
 }
 
 // Helper function to safely get asset URL
 function getAssetUrl(asset: ContentfulAsset): string | undefined {
   if (!asset?.fields?.file) return undefined;
   const locale = Object.keys(asset.fields.file)[0];
-  return asset.fields.file[locale]?.url;
+  return (asset.fields.file as any)[locale]?.url;
 }
 
 function transformAssetFile(file: any): AssetFile {
@@ -235,7 +235,7 @@ function transformAssetFile(file: any): AssetFile {
 
 // Helper function to resolve image asset
 async function resolveImageAsset(imageField: any, includes: any, client: any): Promise<ContentfulAsset | null> {
-  if (!imageField || !imageField.sys) {
+  if (!imageField || typeof imageField !== 'object' || !('sys' in imageField)) {
     return null;
   }
 
@@ -406,9 +406,18 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
         // If includes exist, check if they contain the referenced image
         if (personResponse.includes?.Asset?.length) {
           // If person has image field with an ID, check if it's in the includes
-          if (person.fields?.image?.sys?.id) {
+          if (
+            person.fields?.image &&
+            typeof person.fields.image === 'object' &&
+            'sys' in person.fields.image &&
+            person.fields.image.sys &&
+            typeof person.fields.image.sys === 'object' &&
+            'id' in person.fields.image.sys
+          ) {
             const imageId = person.fields.image.sys.id;
-            const foundAsset = personResponse.includes.Asset.find(asset => asset.sys.id === imageId);
+            const foundAsset = personResponse.includes.Asset.find(asset =>
+              asset && typeof asset === 'object' && 'sys' in asset && asset.sys && typeof asset.sys === 'object' && 'id' in asset.sys && asset.sys.id === imageId
+            );
           }
         }
       } else {
