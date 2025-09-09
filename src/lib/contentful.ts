@@ -299,7 +299,17 @@ export function getContentfulClient() {
   const managementToken = process.env.CONTENTFUL_MANAGEMENT_TOKEN;
 
   if (!spaceId || !accessToken) {
-    throw new Error("Contentful credentials are missing. Check your .env file.");
+    console.warn("Contentful credentials are missing. Check your .env file.");
+    // Return a mock client that will fail gracefully
+    return {
+      delivery: {
+        getEntries: async () => ({ items: [], total: 0, includes: {} }),
+        getEntry: async () => null,
+        getAsset: async () => null,
+        getContentType: async () => null
+      },
+      management: null
+    };
   }
 
   return {

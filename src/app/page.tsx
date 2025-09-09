@@ -152,26 +152,27 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
-  const client = getContentfulClient();
-  const query = {
-    content_type: 'page' as const,
-    'fields.slug': '/',
-    include: 10,
-  };
-  console.log('Contentful query:', query);
-  const response = await client.delivery.getEntries<PageEntry>(query);
-  console.log('Contentful response:', {
-    total: response.total,
-    items: response.items.length,
-    firstItem: response.items[0]?.fields,
-    includes: response.includes
-  });
+  try {
+    const client = getContentfulClient();
+    const query = {
+      content_type: 'page' as const,
+      'fields.slug': '/',
+      include: 10,
+    };
+    console.log('Contentful query:', query);
+    const response = await client.delivery.getEntries<PageEntry>(query);
+    console.log('Contentful response:', {
+      total: response.total,
+      items: response.items.length,
+      firstItem: response.items[0]?.fields,
+      includes: response.includes
+    });
 
-  const page = response.items[0];
-  if (!page) {
-    console.log('No page found with slug "/"');
-    return <div>Page not found</div>;
-  }
+    const page = response.items[0];
+    if (!page) {
+      console.log('No page found with slug "/"');
+      return <div>Page not found</div>;
+    }
 
   return (
     <>

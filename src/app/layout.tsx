@@ -41,11 +41,17 @@ export const metadata: Metadata = {
 };
 
 async function getNavigationData() {
-  const client = getContentfulClient();
-  const response = await client.delivery.getEntry('76xMjdWQDx8Tf290hdvXrN', {
-    include: 3 // Include up to 3 levels of linked entries
-  });
-  return response as unknown as NavigationContentType || null;
+  try {
+    const client = getContentfulClient();
+    const response = await client.delivery.getEntry('76xMjdWQDx8Tf290hdvXrN', {
+      include: 3 // Include up to 3 levels of linked entries
+    });
+    return response as unknown as NavigationContentType || null;
+  } catch (error) {
+    console.error('Error fetching navigation data:', error);
+    // Return null if Contentful is not available during build
+    return null;
+  }
 }
 
 export default async function RootLayout({
