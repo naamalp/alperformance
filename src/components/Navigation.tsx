@@ -11,7 +11,7 @@ import { generateSlugFromReference } from '@/lib/utils';
 import CTA from './CTA';
 
 interface NavigationProps {
-  data: NavigationContentType;
+  data: NavigationContentType | null;
 }
 
 export default function Navigation({ data }: NavigationProps) {
@@ -21,6 +21,23 @@ export default function Navigation({ data }: NavigationProps) {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout>();
   const pathname = usePathname();
+
+  // Handle null data gracefully
+  if (!data || !data.fields) {
+    return (
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-xl font-bold text-gray-900">
+                AL Performance
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   const { fields } = data;
   const { logo, items, cta } = fields;
