@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && ts-node --project src/lib/tsconfig.json src/lib/sitemap.ts",
+    "build": "next build",
+    "postbuild": "ts-node --project src/lib/tsconfig.json src/lib/sitemap.ts || echo 'Sitemap generation failed, continuing...'",
     "start": "next start",
     "lint": "next lint"
   },

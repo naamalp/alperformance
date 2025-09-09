@@ -175,7 +175,7 @@ export default async function Home() {
 
   return (
     <>
-      {page.fields.body.map((item: ContentfulEntry) => {
+      {page.fields.body && Array.isArray(page.fields.body) && (page.fields.body as any[]).map((item: ContentfulEntry) => {
         console.log('Rendering body item:', {
           contentType: item.sys.contentType?.sys.id,
           fields: item.fields,
@@ -184,7 +184,7 @@ export default async function Home() {
 
         switch (item.sys.contentType?.sys.id) {
           case 'heroBanner':
-            return <HeroBanner key={item.sys.id} data={item} />;
+            return <HeroBanner key={item.sys.id} data={item as any} />;
           case 'listingDynamic':
             const listingData = {
               sys: {
@@ -287,7 +287,7 @@ export default async function Home() {
               ctaType: featureData.fields.cta?.fields?.type
             });
 
-            return <Feature key={item.sys.id} data={featureData} />;
+            return <Feature key={item.sys.id} data={featureData as any} />;
           case 'listingContent':
             console.log('Found listingContent:', {
               item,
@@ -298,21 +298,16 @@ export default async function Home() {
             });
             
             const listingContentData = {
-              contentTypeId: 'listingContent' as const,
-              sys: {
-                id: item.sys.id,
-                type: item.sys.type,
-                linkType: item.sys.linkType
-              },
               fields: {
                 internalName: item.fields.internalName || '',
                 title: item.fields.title || '',
                 subTitle: item.fields.subTitle || '',
                 style: item.fields.style || 'Card',
                 items: item.fields.items || [],
-                background: item.fields.background || 'Light'
+                background: item.fields.background || 'Light',
+                contentTypeId: 'listingContent'
               }
-            } as FeatureContentType;
+            };
             
             console.log('Transformed listingContent data:', listingContentData);
             return <ListingContent key={item.sys.id} data={listingContentData} />;

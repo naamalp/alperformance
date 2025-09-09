@@ -372,7 +372,7 @@ export default function ListingContent({ data }: ListingContentProps) {
       ...data,
       fields: {
         ...data.fields,
-        items: personItems.map(item => ({
+        items: personItems.filter(item => item && item.fields).map(item => ({
           ...item,
           fields: {
             ...item.fields,
@@ -407,7 +407,7 @@ export default function ListingContent({ data }: ListingContentProps) {
   const isTestimonials = data.fields.style === 'Testimonial';
   if (isTestimonials) {
     // Transform the testimonial data to match the expected structure
-    const transformedTestimonials = data.fields.items.map((item: any) => ({
+    const transformedTestimonials = data.fields.items.filter((item: any) => item && item.fields).map((item: any) => ({
       sys: {
         id: item.sys.id,
         type: item.sys.type,
@@ -446,7 +446,7 @@ export default function ListingContent({ data }: ListingContentProps) {
             </p>
           </div>
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6 lg:pl-8">
-            {data.fields.items?.map((item) => (
+            {data.fields.items?.filter(item => item && item.fields).map((item) => (
               <PageCardComponent key={item.sys.id} item={item as PageItem} textColorClass={textColorClass} />
             ))}
           </div>
@@ -470,7 +470,7 @@ export default function ListingContent({ data }: ListingContentProps) {
           </p>
         </div>
         <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6 lg:pl-8">
-          {data.fields.items?.map((item) => {
+          {data.fields.items?.filter(item => item && item.fields).map((item) => {
             if ('price' in item.fields) {
               return <PricingItem key={item.sys.id} package={item as Package} textColorClass={textColorClass} />;
             }

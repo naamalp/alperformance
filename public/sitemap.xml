@@ -116,13 +116,19 @@
     </url>
   
     <url>
-      <loc>https://www.alperformance.co.uk/services/ivr-and-inbound-efficiency-review</loc>
+      <loc>https://www.alperformance.co.uk/services/dialler-monitoring</loc>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
     </url>
   
     <url>
-      <loc>https://www.alperformance.co.uk/services/dialler-monitoring</loc>
+      <loc>https://www.alperformance.co.uk/services/contact-centre-expansion-planning</loc>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>
+  
+    <url>
+      <loc>https://www.alperformance.co.uk/services/ivr-and-inbound-efficiency-review</loc>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
     </url>
@@ -135,12 +141,6 @@
   
     <url>
       <loc>https://www.alperformance.co.uk/services/outbound-strategy-review</loc>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.alperformance.co.uk/services/contact-centre-expansion-planning</loc>
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>
     </url>
