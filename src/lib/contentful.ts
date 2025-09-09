@@ -408,13 +408,13 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
         // Check if image field exists in the content type definition
         try {
           const contentTypeResponse = await client.delivery.getContentType('person');
-          const imageField = contentTypeResponse.fields.find(field => field.id === 'image');
+          const imageField = contentTypeResponse?.fields?.find(field => field.id === 'image');
         } catch (typeError) {
           console.error('[getPageBySlug] Error fetching content type:', typeError);
         }
         
         // If includes exist, check if they contain the referenced image
-        if (personResponse.includes?.Asset?.length) {
+        if (personResponse.includes && 'Asset' in personResponse.includes && personResponse.includes.Asset?.length) {
           // If person has image field with an ID, check if it's in the includes
           if (
             person.fields?.image &&
@@ -425,7 +425,7 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
             'id' in person.fields.image.sys
           ) {
             const imageId = person.fields.image.sys.id;
-            const foundAsset = personResponse.includes.Asset.find(asset =>
+            const foundAsset = personResponse.includes.Asset?.find((asset: any) =>
               asset && typeof asset === 'object' && 'sys' in asset && asset.sys && typeof asset.sys === 'object' && 'id' in asset.sys && asset.sys.id === imageId
             );
           }
@@ -456,10 +456,10 @@ export async function getPageBySlug(slug: string): Promise<PageContentType | Ser
         response = await client.delivery.getEntries(query);
         
         // Log information about included assets
-        if (response.includes && response.includes.Asset) {
+        if (response.includes && 'Asset' in response.includes && response.includes.Asset) {
           console.log('[getPageBySlug] Included assets:', {
             total: response.includes.Asset.length,
-            assetIds: response.includes.Asset.map(asset => asset.sys.id),
+            assetIds: response.includes.Asset.map((asset: any) => asset.sys.id),
             firstAsset: response.includes.Asset[0] ? {
               id: response.includes.Asset[0].sys.id,
               hasFields: !!response.includes.Asset[0].fields,
