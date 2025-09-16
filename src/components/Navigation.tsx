@@ -59,6 +59,20 @@ export default function Navigation({ data }: NavigationProps) {
     };
   }, []);
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const handleDropdownEnter = (itemId: string) => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
@@ -92,14 +106,14 @@ export default function Navigation({ data }: NavigationProps) {
 
     if (isMobile) {
       return (
-        <div key={item.sys.id}>
-          <div className="flex items-center justify-between">
+        <div key={item.sys.id} className="border-b border-gray-100 last:border-b-0">
+          <div className="flex items-center justify-between py-4">
             <Link
               href={href}
-              className={`block border-l-4 py-2 pl-3 pr-4 text-base font-medium ${
+              className={`flex-1 text-lg font-medium transition-colors ${
                 isActive
-                  ? 'border-brand-primary bg-brand-primary-light/10 text-brand-primary'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700'
+                  ? 'text-brand-primary'
+                  : 'text-gray-900 hover:text-brand-primary'
               }`}
               onClick={() => !hasSubItems && setIsOpen(false)}
             >
@@ -108,17 +122,17 @@ export default function Navigation({ data }: NavigationProps) {
             {hasSubItems && (
               <button
                 onClick={() => toggleSubMenu(item.sys.id)}
-                className="p-2 text-gray-500 hover:text-gray-700"
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <FontAwesomeIcon 
                   icon={faChevronDown} 
-                  className={`h-4 w-4 transform transition-transform ${isSubMenuOpen ? 'rotate-180' : ''}`}
+                  className={`h-5 w-5 transform transition-transform duration-200 ${isSubMenuOpen ? 'rotate-180' : ''}`}
                 />
               </button>
             )}
           </div>
           {hasSubItems && isSubMenuOpen && (
-            <div className="pl-4 space-y-1 mt-1 border-l-2 border-gray-200">
+            <div className="pb-4 space-y-3">
               {item.fields.items.map((subItem: any) => {
                 const subHref = subItem.fields.link?.fields ? `/${generateSlugFromReference(subItem.fields.link)}` : '/';
                 const isSubActive = pathname === subHref;
@@ -127,10 +141,10 @@ export default function Navigation({ data }: NavigationProps) {
                   <Link
                     key={subItem.sys.id}
                     href={subHref}
-                    className={`block py-2 pl-3 pr-4 text-sm font-medium ${
+                    className={`block py-2 text-base font-medium transition-colors ${
                       isSubActive
                         ? 'text-brand-primary'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : 'text-gray-600 hover:text-brand-primary'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -240,19 +254,60 @@ export default function Navigation({ data }: NavigationProps) {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu backdrop */}
       {isOpen && (
-        <div className="sm:hidden absolute top-16 left-0 right-0 bg-white shadow-lg z-50">
-          <div className="space-y-1 pb-3 pt-2">
-            {items?.map(item => renderMenuItem(item, true))}
+        <div 
+          className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300" 
+          onClick={toggleMenu}
+        />
+      )}
+      
+      {/* Mobile menu - Full page overlay */}
+      <div className={`sm:hidden fixed inset-0 bg-white z-50 overflow-y-auto transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-y-0' : '-translate-y-full'
+      }`}>
+          {/* Header with close button */}
+          <div className="flex justify-between items-center p-4 border-b border-gray-200">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
+                {logo?.fields?.file?.url ? (
+                  <Image
+                    src={`https:${logo.fields.file.url}`}
+                    alt={logo.fields.title || 'AL Performance Logo'}
+                    width={logo.fields.file.details.image.width}
+                    height={logo.fields.file.details.image.height}
+                    className="h-8 w-auto"
+                    priority
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-brand-primary">
+                    {logo?.fields?.title || 'AL Performance'}
+                  </span>
+                )}
+              </Link>
+            </div>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
+              onClick={toggleMenu}
+            >
+              <span className="sr-only">Close main menu</span>
+              <FontAwesomeIcon icon={faXmark} className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Navigation content */}
+          <div className="px-4 py-6 space-y-6">
+            <div className="space-y-1">
+              {items?.map(item => renderMenuItem(item, true))}
+            </div>
             {cta && (
-              <div className="mt-4 px-3">
+              <div className="pt-4 border-t border-gray-200">
                 <CTA data={cta} />
               </div>
             )}
           </div>
         </div>
-      )}
     </nav>
   );
 } 
