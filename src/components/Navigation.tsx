@@ -87,6 +87,10 @@ export default function Navigation({ data }: NavigationProps) {
   };
 
   const toggleMenu = () => {
+    if (!isOpen) {
+      // When opening the menu, scroll to top to ensure proper positioning
+      window.scrollTo(0, 0);
+    }
     setIsOpen(!isOpen);
   };
 
@@ -255,15 +259,15 @@ export default function Navigation({ data }: NavigationProps) {
       </div>
 
       {/* Mobile menu backdrop */}
-      {isOpen && (
-        <div 
-          className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300" 
-          onClick={toggleMenu}
-        />
-      )}
+      <div 
+        className={`sm:hidden fixed inset-0 bg-black bg-opacity-50 z-[110] transition-opacity duration-300 ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={toggleMenu}
+      />
       
       {/* Mobile menu - Full page overlay */}
-      <div className={`sm:hidden fixed inset-0 bg-white z-50 overflow-y-auto transition-transform duration-300 ease-in-out ${
+      <div className={`sm:hidden fixed inset-0 bg-white z-[120] overflow-y-auto transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-y-0' : '-translate-y-full'
       }`}>
           {/* Header with close button */}
