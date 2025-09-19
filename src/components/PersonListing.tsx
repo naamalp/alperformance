@@ -61,7 +61,7 @@ const options = {
   },
 };
 
-const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass: string }) => {
+const PersonCard = ({ item, textColorClass, background }: { item: PersonItem; textColorClass: string; background?: 'Light' | 'Dark' }) => {
   return (
     <article className={`flex flex-col items-start ${item.fields.featured ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
       <div className="relative w-full">
@@ -80,16 +80,15 @@ const PersonCard = ({ item, textColorClass }: { item: PersonItem; textColorClass
         <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
       </div>
       <div className="max-w-xl">
-        <div className="mt-8 flex items-center gap-x-4 text-xs">
-          <time dateTime="2020-03-16" className="text-gray-500">
-            {item.fields.role}
-          </time>
-        </div>
         <div className="group relative">
-          <h3 className={`mt-3 text-lg font-semibold leading-6 ${textColorClass} group-hover:text-gray-600`}>
-            <span className="absolute inset-0" />
-            {item.fields.firstName} {item.fields.lastName}
+          <h3 className={`mt-8 text-xl font-bold leading-6 ${textColorClass} group-hover:text-gray-600`}>
+            {item.fields.firstName || 'First Name'} {item.fields.lastName || 'Last Name'}
           </h3>
+          <div className="mt-2 flex items-center gap-x-4">
+            <span className={`text-sm font-medium ${background === 'Dark' ? 'text-blue-300' : 'text-blue-600'}`}>
+              {item.fields.role || 'Role'}
+            </span>
+          </div>
           <div className="mt-5 text-sm leading-6 text-gray-600">
             {item.fields.bio && documentToReactComponents(item.fields.bio, options)}
           </div>
@@ -129,7 +128,7 @@ export default function PersonListing({ data }: PersonListingProps) {
         </div>
         <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-6">
           {data.fields.items?.map((item) => (
-            <PersonCard key={item.sys.id} item={item} textColorClass={textColorClass} />
+            <PersonCard key={item.sys.id} item={item} textColorClass={textColorClass} background={data.fields.background} />
           ))}
         </div>
       </div>

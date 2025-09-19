@@ -202,7 +202,7 @@ const CardItemComponent = ({ item, textColorClass }: { item: CardItem; textColor
         {item.fields.image?.fields?.file?.url && (
           <Image
             src={`https:${item.fields.image.fields.file.url}`}
-            alt={item.fields.title}
+            alt={item.fields.title || 'Team member image'}
             width={item.fields.image.fields.file.details.image.width}
             height={item.fields.image.fields.file.details.image.height}
             className="h-full w-full object-cover m-0"
@@ -347,12 +347,15 @@ const PageCardComponent = ({ item, textColorClass }: { item: PageItem; textColor
 );
 
 export default function ListingContent({ data }: ListingContentProps) {
-  // Check if all items are person items
-  const allItemsArePersons = data.fields.items?.every(isPersonItem);
+  // Filter out unpublished/invalid items and check if remaining items are persons
+  const validItems = data.fields.items?.filter(item => item && item.fields) || [];
+  const personItems = validItems.filter(isPersonItem);
+  const hasPersonItems = personItems.length > 0;
+  const allValidItemsArePersons = validItems.length > 0 && validItems.every(isPersonItem);
 
-  // If all items are persons, render the PersonListing component
-  if (allItemsArePersons) {
-    const personItems = data.fields.items.filter(isPersonItem);
+  // If we have person items and all valid items are persons, render the PersonListing component
+  if (hasPersonItems && allValidItemsArePersons) {
+    
     // Add a new function to try different ways of getting the image
     const transformPersonImage = (image: any) => {
       // Case 1: image is an object with fields.file
@@ -372,7 +375,7 @@ export default function ListingContent({ data }: ListingContentProps) {
       ...data,
       fields: {
         ...data.fields,
-        items: personItems.filter(item => item && item.fields).map(item => ({
+        items: personItems.map(item => ({
           ...item,
           fields: {
             ...item.fields,
